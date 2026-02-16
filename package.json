@@ -1,6 +1,16 @@
 {
   "name": "agent-tools-ts",
   "module": "index.ts",
+  "version": "0.1.0",
+  "main": "./src/lib.ts",
+  "types": "./src/lib.ts",
+  "exports": {
+    "." : "./src/lib.ts"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
   "type": "module",
   "scripts": {
     "format": "biome format --write ."
