@@ -5,7 +5,7 @@
   "main": "./src/lib.ts",
   "types": "./src/lib.ts",
   "exports": {
-    "." : "./src/lib.ts"
+    ".": "./src/lib.ts"
   },
   "files": [
     "src",
