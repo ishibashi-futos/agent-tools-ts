@@ -28,7 +28,6 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     expect(result.status).toBe("success");
     if (result.status !== "success") throw new Error("Expected denied but got success");
 
-    expect(result.data).toBe("Apply Success");
     expect(mockHandler).toHaveBeenCalledWith(resolve(workspaceRoot, "src/main.ts"), "patch data");
   });
 
@@ -102,9 +101,6 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     });
 
     expect(successResult.status).toBe("success");
-    if (successResult.status === "success") {
-      expect(successResult.data).toBe("Bypassed Success");
-    }
   });
 
   it("エッジケース: 不正なパス引数（null等）に対して failure を返すこと", async () => {

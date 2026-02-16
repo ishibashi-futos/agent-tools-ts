@@ -1,5 +1,5 @@
 import { createSecureTool, type ToolContext, type ToolMetadata } from "./factory";
-import { applyPatch } from "./git/apply_patch";
+import { applyPatch } from "./tools/git/apply_patch";
 import { SecurityBypass } from "./security/bypass";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
