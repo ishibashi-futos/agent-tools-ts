@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
 // ツールごとのアクセス権限レベル
-export type AccessLevel = 'allow' | 'deny';
+export type AccessLevel = "allow" | "deny";
 
 export interface SecurityPolicyConfig {
   tools: Record<string, AccessLevel>;
@@ -37,9 +37,10 @@ export const SecurityPolicy = {
 
     const policy = config.tools[toolName] ?? config.defaultPolicy;
 
-    if (policy === 'deny') {
-      throw new Error(`[Security Policy] Access denied for tool: "${toolName}"`);
+    if (policy === "deny") {
+      throw new Error(
+        `[Security Policy] Access denied for tool: "${toolName}"`,
+      );
     }
-
-  }
+  },
 };

@@ -22,15 +22,15 @@ export interface ToolMetadata {
 /**
  * ツール実行時の戻り値定義
  */
-export type ToolResultStatus = 'success' | 'failure' | 'denied';
+export type ToolResultStatus = "success" | "failure" | "denied";
 export interface ToolSuccess<R> {
-  status: 'success';
+  status: "success";
   data: R;
 }
 
 export interface ToolError {
-  status: 'failure' | 'denied';
-  reason: 'policy' | 'sandbox' | 'runtime';
+  status: "failure" | "denied";
+  reason: "policy" | "sandbox" | "runtime";
   message: string;
 }
 
@@ -41,30 +41,33 @@ export type ToolResult<R = any> = ToolSuccess<R> | ToolError;
  */
 export function createSecureTool<T extends any[], R>(
   metadata: ToolMetadata,
-  fn: (...args: T) => Promise<R> | R
+  fn: (...args: T) => Promise<R> | R,
 ) {
   return async (context: ToolContext, ...args: T): Promise<ToolResult<R>> => {
     const { name, isWriteOp } = metadata;
 
     try {
-        // 入力引数の基本検証（型不正は runtime エラーとして扱う）
-        if (args.length > 0 && typeof args[0] !== 'string') {
-          throw new Error('Invalid path argument');
-        }
+      // 入力引数の基本検証（型不正は runtime エラーとして扱う）
+      if (args.length > 0 && typeof args[0] !== "string") {
+        throw new Error("Invalid path argument");
+      }
       // --- Security & Sandbox Check ---
       try {
         SecurityPolicy.authorize(name, context.policy);
         SandboxFS.validateAccess(context.writeScope, isWriteOp);
 
         if (typeof args[0] === "string") {
-          args[0] = SandboxPath.resolveInWorkspace(args[0], context.workspaceRoot) as any;
+          args[0] = SandboxPath.resolveInWorkspace(
+            args[0],
+            context.workspaceRoot,
+          ) as any;
         }
       } catch (e: any) {
         // 拒否時は ToolError 型を返す
         return {
-          status: 'denied',
-          reason: e.message.includes('Policy') ? 'policy' : 'sandbox',
-          message: e.message
+          status: "denied",
+          reason: e.message.includes("Policy") ? "policy" : "sandbox",
+          message: e.message,
         };
       }
 
@@ -72,14 +75,13 @@ export function createSecureTool<T extends any[], R>(
       const result = await fn(...args);
 
       // 成功時は ToolSuccess 型を返す
-      return { status: 'success', data: result };
-
+      return { status: "success", data: result };
     } catch (e: any) {
       // 実行時エラーは failure
       return {
-        status: 'failure',
-        reason: 'runtime',
-        message: e instanceof Error ? e.message : String(e)
+        status: "failure",
+        reason: "runtime",
+        message: e instanceof Error ? e.message : String(e),
       };
     }
   };

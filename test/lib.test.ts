@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "bun:test";
-import { createAgentToolkit, SecurityBypass, type ToolContext, ToolCatalog } from "../src/lib";
+import {
+  createAgentToolkit,
+  SecurityBypass,
+  type ToolContext,
+  ToolCatalog,
+} from "../src/lib";
 import { resolve } from "node:path";
 
 describe("Library Integration (Toolkit & Guardrails)", () => {
@@ -18,7 +23,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const context: ToolContext = {
       workspaceRoot,
       writeScope: "workspace-write",
-      policy: { tools: { "apply_patch": "allow" }, defaultPolicy: "deny" }
+      policy: { tools: { apply_patch: "allow" }, defaultPolicy: "deny" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -26,23 +31,28 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
 
     // 型絞り込み
     expect(result.status).toBe("success");
-    if (result.status !== "success") throw new Error("Expected denied but got success");
+    if (result.status !== "success")
+      throw new Error("Expected denied but got success");
 
-    expect(mockHandler).toHaveBeenCalledWith(resolve(workspaceRoot, "src/main.ts"), "patch data");
+    expect(mockHandler).toHaveBeenCalledWith(
+      resolve(workspaceRoot, "src/main.ts"),
+      "patch data",
+    );
   });
 
   it("エッジケース: ポリシーでdenyされているツールは denied を返すこと", async () => {
     const context: ToolContext = {
       workspaceRoot,
       writeScope: "workspace-write",
-      policy: { tools: { "apply_patch": "deny" }, defaultPolicy: "allow" }
+      policy: { tools: { apply_patch: "deny" }, defaultPolicy: "allow" },
     };
 
     const toolkit = createAgentToolkit(context);
     const result = await toolkit.applyPatch("src/main.ts", "data");
 
     expect(result.status).toBe("denied");
-    if (result.status !== "denied") throw new Error("Expected denied but got success");
+    if (result.status !== "denied")
+      throw new Error("Expected denied but got success");
     expect(result.reason).toBe("policy");
     expect(result.message).toMatch(/Access denied/);
   });
@@ -51,14 +61,15 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const context: ToolContext = {
       workspaceRoot,
       writeScope: "read-only",
-      policy: { tools: { "apply_patch": "allow" }, defaultPolicy: "allow" }
+      policy: { tools: { apply_patch: "allow" }, defaultPolicy: "allow" },
     };
 
     const toolkit = createAgentToolkit(context);
     const result = await toolkit.applyPatch("src/main.ts", "data");
 
     expect(result.status).toBe("denied");
-    if (result.status !== "denied") throw new Error("Expected denied but got success");
+    if (result.status !== "denied")
+      throw new Error("Expected denied but got success");
     expect(result.reason).toBe("sandbox");
     expect(result.message).toMatch(/Write operation denied/);
   });
@@ -67,14 +78,15 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const context: ToolContext = {
       workspaceRoot,
       writeScope: "workspace-write",
-      policy: { tools: { "apply_patch": "allow" }, defaultPolicy: "allow" }
+      policy: { tools: { apply_patch: "allow" }, defaultPolicy: "allow" },
     };
 
     const toolkit = createAgentToolkit(context);
     const result = await toolkit.applyPatch("../../../etc/passwd", "data");
 
     expect(result.status).toBe("denied");
-    if (result.status !== "denied") throw new Error("Expected denied but got success");
+    if (result.status !== "denied")
+      throw new Error("Expected denied but got success");
     expect(result.reason).toBe("sandbox");
     expect(result.message).toMatch(/outside of workspace/);
   });
@@ -86,7 +98,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const context: ToolContext = {
       workspaceRoot,
       writeScope: "workspace-write",
-      policy: { tools: { "apply_patch": "deny" }, defaultPolicy: "deny" }
+      policy: { tools: { apply_patch: "deny" }, defaultPolicy: "deny" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -107,7 +119,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const context: ToolContext = {
       workspaceRoot,
       writeScope: "workspace-write",
-      policy: { tools: { "apply_patch": "allow" }, defaultPolicy: "allow" }
+      policy: { tools: { apply_patch: "allow" }, defaultPolicy: "allow" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -116,7 +128,8 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const result = await toolkit.applyPatch(null as any, "data");
 
     expect(result.status).toBe("failure");
-    if (result.status !== "failure") throw new Error("Expected denied but got success");
+    if (result.status !== "failure")
+      throw new Error("Expected denied but got success");
     expect(result.reason).toBe("runtime");
   });
 });

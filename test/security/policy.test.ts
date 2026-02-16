@@ -1,10 +1,13 @@
 // test/security/policy.test.ts
 import { describe, it, expect } from "bun:test";
-import { SecurityPolicy, type SecurityPolicyConfig } from "../../src/security/policy.ts";
+import {
+  SecurityPolicy,
+  type SecurityPolicyConfig,
+} from "../../src/security/policy.ts";
 
 const config: SecurityPolicyConfig = {
-  tools: { "git_log": "allow", "rm_rf": "deny" },
-  defaultPolicy: "deny" as const
+  tools: { git_log: "allow", rm_rf: "deny" },
+  defaultPolicy: "deny" as const,
 };
 
 describe("SecurityPolicy", () => {

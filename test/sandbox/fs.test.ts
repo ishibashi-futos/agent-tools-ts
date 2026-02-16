@@ -7,12 +7,15 @@ describe("SandboxFS", () => {
   });
 
   it("read-onlyモード: 書き込み操作は拒否されること", () => {
-    expect(() => SandboxFS.validateAccess("read-only", true))
-      .toThrow(/Write operation denied/);
+    expect(() => SandboxFS.validateAccess("read-only", true)).toThrow(
+      /Write operation denied/,
+    );
   });
 
   it("workspace-writeモード: 書き込み操作が許可されること", () => {
-    expect(() => SandboxFS.validateAccess("workspace-write", true)).not.toThrow();
+    expect(() =>
+      SandboxFS.validateAccess("workspace-write", true),
+    ).not.toThrow();
   });
 
   it("unrestrictedモード: すべての操作が許可されること", () => {

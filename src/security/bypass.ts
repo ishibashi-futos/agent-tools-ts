@@ -20,5 +20,5 @@ export const SecurityBypass = {
       // For simplicity, call task directly when not bypassed by delegating to policy
       return await task();
     });
-  }
+  },
 };

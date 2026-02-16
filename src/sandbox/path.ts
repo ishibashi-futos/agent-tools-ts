@@ -18,7 +18,7 @@ export const SandboxPath = {
 
     if (isOutside) {
       throw new Error(
-        `[Sandbox Violation] Attempted to access path outside of workspace: "${targetPath}"`
+        `[Sandbox Violation] Attempted to access path outside of workspace: "${targetPath}"`,
       );
     }
 
@@ -35,5 +35,5 @@ export const SandboxPath = {
     } catch {
       return false;
     }
-  }
+  },
 };

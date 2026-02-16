@@ -13,15 +13,17 @@ describe("SandboxPath", () => {
 
   it("異常系: 親ディレクトリへのトラバーサルをブロックすること", () => {
     const malicious = "../../../etc/passwd";
-    expect(() => SandboxPath.resolveInWorkspace(malicious, root))
-      .toThrow(/outside of workspace/);
+    expect(() => SandboxPath.resolveInWorkspace(malicious, root)).toThrow(
+      /outside of workspace/,
+    );
   });
 
   it("異常系: ルート以外の絶対パス指定をブロックすること", () => {
     // Windowsなら C:\Windows, Unixなら /etc/shadow などを想定
     const absoluteMalicious = resolve("/etc/shadow");
-    expect(() => SandboxPath.resolveInWorkspace(absoluteMalicious, root))
-      .toThrow(/outside of workspace/);
+    expect(() =>
+      SandboxPath.resolveInWorkspace(absoluteMalicious, root),
+    ).toThrow(/outside of workspace/);
   });
 
   it("境界値: ワークスペースのルートそのものは許可されること", () => {

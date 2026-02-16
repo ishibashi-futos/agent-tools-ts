@@ -2,7 +2,11 @@
   "name": "agent-tools-ts",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "format": "biome format --write ."
+  },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.0",
     "@types/bun": "latest"
   },
   "peerDependencies": {

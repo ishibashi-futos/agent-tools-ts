@@ -1,4 +1,8 @@
-import { createSecureTool, type ToolContext, type ToolMetadata } from "./factory";
+import {
+  createSecureTool,
+  type ToolContext,
+  type ToolMetadata,
+} from "./factory";
 import { applyPatch } from "./tools/git/apply_patch";
 import { SecurityBypass } from "./security/bypass";
 
@@ -20,7 +24,8 @@ export const ToolCatalog = {
     metadata: {
       name: "apply_patch",
       isWriteOp: true,
-      description: "Applies a unified diff patch to a file within the workspace."
+      description:
+        "Applies a unified diff patch to a file within the workspace.",
     },
     handler: applyPatch,
   },
@@ -31,7 +36,10 @@ export const ToolCatalog = {
  */
 export function createAgentToolkit(context: ToolContext) {
   return {
-    applyPatch: createSecureTool(ToolCatalog.apply_patch.metadata, ToolCatalog.apply_patch.handler).bind(null, context),
+    applyPatch: createSecureTool(
+      ToolCatalog.apply_patch.metadata,
+      ToolCatalog.apply_patch.handler,
+    ).bind(null, context),
   };
 }
 
@@ -44,5 +52,5 @@ export { SecurityBypass };
  * 型定義の再エクスポート
  */
 export type { ToolContext } from "./factory";
-export type { FileAccessMode } from "./sandbox/fs"
+export type { FileAccessMode } from "./sandbox/fs";
 export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";
