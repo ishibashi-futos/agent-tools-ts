@@ -24,6 +24,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       workspaceRoot,
       writeScope: "workspace-write",
       policy: { tools: { apply_patch: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -46,6 +47,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       workspaceRoot,
       writeScope: "workspace-write",
       policy: { tools: { apply_patch: "deny" }, defaultPolicy: "allow" },
+      env: { platform: "linux", osRelease: "5.4.0" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -63,6 +65,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       workspaceRoot,
       writeScope: "read-only",
       policy: { tools: { apply_patch: "allow" }, defaultPolicy: "allow" },
+      env: { platform: "linux", osRelease: "5.4.0" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -80,6 +83,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       workspaceRoot,
       writeScope: "workspace-write",
       policy: { tools: { apply_patch: "allow" }, defaultPolicy: "allow" },
+      env: { platform: "linux", osRelease: "5.4.0" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -100,6 +104,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       workspaceRoot,
       writeScope: "workspace-write",
       policy: { tools: { apply_patch: "deny" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
     };
 
     const toolkit = createAgentToolkit(context);
@@ -121,6 +126,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       workspaceRoot,
       writeScope: "workspace-write",
       policy: { tools: { apply_patch: "allow" }, defaultPolicy: "allow" },
+      env: { platform: "linux", osRelease: "5.4.0" },
     };
 
     const toolkit = createAgentToolkit(context);

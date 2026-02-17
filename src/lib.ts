@@ -51,6 +51,6 @@ export { SecurityBypass };
 /**
  * 型定義の再エクスポート
  */
-export type { ToolContext } from "./factory";
+export { createToolContext, type ToolContext } from "./factory";
 export type { FileAccessMode } from "./sandbox/fs";
 export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";

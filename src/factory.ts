@@ -1,6 +1,7 @@
 import { SecurityPolicy, type SecurityPolicyConfig } from "./security/policy";
 import { SandboxPath } from "./sandbox/path";
 import { SandboxFS, type FileAccessMode } from "./sandbox/fs";
+import * as os from "node:os";
 
 /**
  * ツールの実行コンテキスト定義
@@ -9,6 +10,10 @@ export interface ToolContext {
   workspaceRoot: string;
   writeScope: FileAccessMode;
   policy: SecurityPolicyConfig;
+  env: {
+    platform: NodeJS.Platform;
+    osRelease: string;
+  };
 }
 
 /**
@@ -35,6 +40,30 @@ export interface ToolError {
 }
 
 export type ToolResult<R = any> = ToolSuccess<R> | ToolError;
+
+/**
+ * コンテキスト生成用パラメータ
+ */
+export interface CreateToolContextParams {
+  workspaceRoot: string;
+  writeScope?: FileAccessMode;
+  policy?: SecurityPolicyConfig;
+}
+
+/**
+ * 環境情報を自動取得して実行コンテキストを生成するファクトリ関数
+ */
+export function createToolContext(params: CreateToolContextParams): ToolContext {
+  return {
+    workspaceRoot: params.workspaceRoot,
+    writeScope: params.writeScope ?? "workspace-write",
+    policy: params.policy ?? { tools: {}, defaultPolicy: "deny" },
+    env: {
+      platform: os.platform(),
+      osRelease: os.release(),
+    },
+  };
+}
 
 /**
  * 高階関数により、生のドメイン関数にガードレールを適用する

@@ -8,6 +8,7 @@ describe("factory.ts (createSecureTool)", () => {
     workspaceRoot,
     writeScope: "workspace-write",
     policy: { tools: { test_tool: "allow" }, defaultPolicy: "deny" },
+    env: { platform: "darwin", osRelease: "20.0.0" },
   };
   const mockDomainFn = async (context: ToolContext, path: string, data: string) =>
     `Processed ${path}`;
