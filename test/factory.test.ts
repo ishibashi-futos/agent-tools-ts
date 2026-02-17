@@ -9,7 +9,7 @@ describe("factory.ts (createSecureTool)", () => {
     writeScope: "workspace-write",
     policy: { tools: { test_tool: "allow" }, defaultPolicy: "deny" },
   };
-  const mockDomainFn = async (path: string, data: string) =>
+  const mockDomainFn = async (context: ToolContext, path: string, data: string) =>
     `Processed ${path}`;
 
   it("Security Layer: ポリシー拒否時に status: 'denied' を返すこと", async () => {

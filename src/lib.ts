@@ -13,7 +13,7 @@ import { SecurityBypass } from "./security/bypass";
  */
 interface ToolDefinition<T extends any[], R> {
   metadata: ToolMetadata & { description: string };
-  handler: (...args: T) => Promise<R> | R;
+  handler: (context: ToolContext, ...args: T) => Promise<R> | R;
 }
 
 /**

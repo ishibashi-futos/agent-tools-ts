@@ -41,7 +41,7 @@ export type ToolResult<R = any> = ToolSuccess<R> | ToolError;
  */
 export function createSecureTool<T extends any[], R>(
   metadata: ToolMetadata,
-  fn: (...args: T) => Promise<R> | R,
+  fn: (context: ToolContext, ...args: T) => Promise<R> | R,
 ) {
   return async (context: ToolContext, ...args: T): Promise<ToolResult<R>> => {
     const { name, isWriteOp } = metadata;
@@ -72,7 +72,7 @@ export function createSecureTool<T extends any[], R>(
       }
 
       // --- Execution ---
-      const result = await fn(...args);
+      const result = await fn(context, ...args);
 
       // 成功時は ToolSuccess 型を返す
       return { status: "success", data: result };

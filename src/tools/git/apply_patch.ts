@@ -1,6 +1,7 @@
 import { spawn, type SpawnOptions, type SpawnResult } from "../../utils/exec";
+import { type ToolContext } from "../../factory";
 
-type ApplyPatch = (filePath: string, content: string) => Promise<void>;
+type ApplyPatch = (context: ToolContext, filePath: string, content: string) => Promise<void>;
 type Dependencies = {
   spawn: (cmd: string[], opts?: SpawnOptions) => Promise<SpawnResult>;
 };
@@ -9,7 +10,7 @@ const createApplyPatch = (
     spawn: spawn,
   },
 ): ApplyPatch => {
-  return async (filePath: string, content: string): Promise<void> => {
+  return async (context: ToolContext, filePath: string, content: string): Promise<void> => {
     const { exitCode, stderr } = await deps.spawn(
       ["git", "apply", "--whitespace=fix", "--include", filePath, "-"],
       {

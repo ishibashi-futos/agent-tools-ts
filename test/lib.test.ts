@@ -35,6 +35,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       throw new Error("Expected denied but got success");
 
     expect(mockHandler).toHaveBeenCalledWith(
+      context,
       resolve(workspaceRoot, "src/main.ts"),
       "patch data",
     );
