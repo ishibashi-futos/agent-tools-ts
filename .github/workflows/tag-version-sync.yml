@@ -78,3 +78,16 @@ jobs:
           git add package.json
           git commit -m "chore: bump version to ${VERSION} [skip ci]"
           git push origin HEAD:${{ github.event.repository.default_branch }}
+
+  create-release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    needs:
+      - sync-version
+
+    steps:
+      - name: Create release with generated notes
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
