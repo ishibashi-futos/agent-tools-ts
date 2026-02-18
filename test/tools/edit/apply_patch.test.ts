@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createApplyPatch } from "../../../src/tools/git/apply_patch";
+import { createApplyPatch } from "../../../src/tools/edit/apply_patch.ts";
 import type { ToolContext } from "../../../src/factory";
 
 const context: ToolContext = {
