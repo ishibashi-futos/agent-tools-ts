@@ -53,7 +53,9 @@ export interface CreateToolContextParams {
 /**
  * 環境情報を自動取得して実行コンテキストを生成するファクトリ関数
  */
-export function createToolContext(params: CreateToolContextParams): ToolContext {
+export function createToolContext(
+  params: CreateToolContextParams,
+): ToolContext {
   return {
     workspaceRoot: params.workspaceRoot,
     writeScope: params.writeScope ?? "workspace-write",
