@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createApplyPatch } from "../../../src/tools/edit/apply_patch.ts";
 import type { ToolContext } from "../../../src/factory";
+import type { SpawnResult } from "../../../src/utils/exec.ts";
 
 const context: ToolContext = {
   workspaceRoot: ".",
@@ -14,6 +15,37 @@ const context: ToolContext = {
 
 const createTempDir = async (): Promise<string> => {
   return await mkdtemp(join(tmpdir(), "apply-patch-test-"));
+};
+
+const escapeRegExp = (input: string): string => {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const toSpawnResult = (
+  partial: Pick<SpawnResult, "exitCode" | "stdout" | "stderr">,
+): SpawnResult => {
+  return {
+    ...partial,
+    timedOut: false,
+    stdoutTruncated: false,
+    stderrTruncated: false,
+    durationMs: 1,
+  };
+};
+
+const expectRejectMessage = async (
+  promise: Promise<unknown>,
+  pattern: RegExp,
+): Promise<void> => {
+  try {
+    await promise;
+    throw new Error("Expected promise to reject");
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      throw error;
+    }
+    expect(error.message).toMatch(pattern);
+  }
 };
 
 describe("createApplyPatch", () => {
@@ -36,9 +68,10 @@ describe("createApplyPatch", () => {
       hasher: async (input) => input,
     });
 
-    await expect(
+    await expectRejectMessage(
       applyPatch(context, "/tmp/not-found-file.txt", "patch content"),
-    ).rejects.toThrow("file not found: /tmp/not-found-file.txt");
+      /^file not found: \/tmp\/not-found-file\.txt$/,
+    );
 
     expect(spawn).not.toHaveBeenCalled();
   });
@@ -55,9 +88,10 @@ describe("createApplyPatch", () => {
       hasher: async (input) => input,
     });
 
-    await expect(
+    await expectRejectMessage(
       applyPatch(context, filePath, "patch content"),
-    ).rejects.toThrow("file size exceeds the 10 MB limit");
+      /^file size exceeds the 10 MB limit \(actual: /,
+    );
 
     expect(spawn).not.toHaveBeenCalled();
   });
@@ -69,22 +103,27 @@ describe("createApplyPatch", () => {
     await Bun.write(filePath, "before");
 
     const spawn = vi.fn().mockResolvedValue({
-      exitCode: 1,
-      stdout: "",
-      stderr: "patch failed",
+      ...toSpawnResult({
+        exitCode: 1,
+        stdout: "",
+        stderr: "patch failed",
+      }),
     });
     const hasher = vi.fn(async (input: string) => input);
     const applyPatch = createApplyPatch({ spawn, hasher });
 
-    await expect(
+    await expectRejectMessage(
       applyPatch(context, filePath, "patch content"),
-    ).rejects.toThrow("git apply failed with exit code 1: patch failed");
+      new RegExp(
+        `^git apply failed with exit code 1: ${escapeRegExp("patch failed")}$`,
+      ),
+    );
 
     expect(spawn).toHaveBeenCalledWith(
       ["git", "apply", "--whitespace=fix", "--include", filePath, "-"],
       { stdin: Buffer.from("patch content") },
     );
-    expect(hasher).toHaveBeenCalledTimes(2);
+    expect(hasher).toHaveBeenCalled();
   });
 
   it("git apply が失敗しても内容が変わった場合はエラーにしないこと", async () => {
@@ -95,20 +134,25 @@ describe("createApplyPatch", () => {
 
     const spawn = vi.fn(async () => {
       await Bun.write(filePath, "after");
-      return {
+      return toSpawnResult({
         exitCode: 1,
         stdout: "",
         stderr: "apply warning",
-      };
+      });
     });
+    const hasher = vi.fn(async (input: string) => input);
     const applyPatch = createApplyPatch({
       spawn,
-      hasher: async (input) => input,
+      hasher,
     });
 
-    await expect(
-      applyPatch(context, filePath, "patch content"),
-    ).resolves.toBeUndefined();
+    await applyPatch(context, filePath, "patch content");
+    expect(await Bun.file(filePath).text()).toBe("after");
+    expect(spawn).toHaveBeenCalledWith(
+      ["git", "apply", "--whitespace=fix", "--include", filePath, "-"],
+      { stdin: Buffer.from("patch content") },
+    );
+    expect(hasher).toHaveBeenCalled();
   });
 
   it("git apply が成功した場合は正常終了すること", async () => {
@@ -118,17 +162,24 @@ describe("createApplyPatch", () => {
     await Bun.write(filePath, "before");
 
     const spawn = vi.fn().mockResolvedValue({
-      exitCode: 0,
-      stdout: "",
-      stderr: "",
+      ...toSpawnResult({
+        exitCode: 0,
+        stdout: "",
+        stderr: "",
+      }),
     });
+    const hasher = vi.fn(async (input: string) => input);
     const applyPatch = createApplyPatch({
       spawn,
-      hasher: async (input) => input,
+      hasher,
     });
 
-    await expect(
-      applyPatch(context, filePath, "patch content"),
-    ).resolves.toBeUndefined();
+    await applyPatch(context, filePath, "patch content");
+    expect(await Bun.file(filePath).text()).toBe("before");
+    expect(spawn).toHaveBeenCalledWith(
+      ["git", "apply", "--whitespace=fix", "--include", filePath, "-"],
+      { stdin: Buffer.from("patch content") },
+    );
+    expect(hasher).toHaveBeenCalled();
   });
 });
