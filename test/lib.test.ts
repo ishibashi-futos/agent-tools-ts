@@ -203,4 +203,42 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     expect(mockHandler).toHaveBeenCalledWith(context);
     expect(result.data.branch).toBe("main");
   });
+
+  it("正常系: getAllowedTools は defaultPolicy=deny で allow 指定のみ返すこと", () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: {
+        tools: { read_file: "allow", exec_command: "allow" },
+        defaultPolicy: "deny",
+      },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const tools = toolkit.getAllowedTools();
+    const names = tools.map((tool) => tool.function.name);
+
+    expect(names).toEqual(["exec_command", "read_file"]);
+  });
+
+  it("正常系: getAllowedTools は defaultPolicy=allow で deny 指定を除外すること", () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: {
+        tools: { exec_command: "deny" },
+        defaultPolicy: "allow",
+      },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const tools = toolkit.getAllowedTools();
+    const names = tools.map((tool) => tool.function.name);
+
+    expect(names).not.toContain("exec_command");
+    expect(names).toContain("apply_patch");
+    expect(names).toContain("tree");
+  });
 });

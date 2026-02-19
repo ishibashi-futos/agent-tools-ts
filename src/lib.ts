@@ -9,6 +9,8 @@ import { tree } from "./tools/edit/tree/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { SecurityBypass } from "./security/bypass";
+import { TOOL_DEFINITIONS } from "./registory/definitions";
+import { selectAllowedTools } from "./registory/select";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
 
@@ -96,6 +98,7 @@ export function createAgentToolkit(context: ToolContext) {
       ToolCatalog.git_status_summary.metadata,
       ToolCatalog.git_status_summary.handler,
     ).bind(null, context),
+    getAllowedTools: () => selectAllowedTools(TOOL_DEFINITIONS, context.policy),
   };
 }
 
