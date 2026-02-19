@@ -23,17 +23,19 @@
 
 - シナリオテストは通常 `bun test` の対象外であること
 - `main` ブランチへの push ごとに `test:e2e` が CI で自動実行されること
+- `pull_request` では実行しない（`main` 保護を優先する運用）こと
 - ローカルでは明示コマンド（例: `bun run test:e2e`）で同じシナリオを再実行できること
 - 外部リポジトリはテスト開始時に一時ディレクトリへ clone すること
 - 再現性のため、clone 後に固定 commit hash へ checkout すること
+- clone 手順は `git clone --depth 1 --branch <default-branch>` 後、`git fetch --depth 1 origin <ref>` で対象 commit を取得し、`git checkout --detach <ref>` を行うこと
 - 各シナリオは必ず 2-3 ツールを順番に呼ぶこと
-- 判定は「ツール戻り値（status/data/message）」のみを一次根拠とすること
-- ファイル編集などは、アサーションにより想定した変更が行われているかを実態のファイルを確認すること
+- 一次判定は「ツール戻り値（status/data/message）」で行い、pass/fail を決定すること
+- ファイル編集などの実体確認は二次判定（デバッグ情報）として扱うこと
 - 実行失敗時に、どのツールのどの入力で失敗したかを出力すること
 
 ### 3.2 SHOULD
 
-- `git clone --depth 1` を基本とし、必要時のみ追加 fetch する
+- `git clone --depth 1` を基本とし、`ref` が shallow 範囲外の場合は `git fetch --depth 1 origin <ref>` を追加実行する
 - 失敗時の調査容易性のため、`exec_command` の `stdout/stderr` をログ保存する
 - ネットワーク不安定時の flake 低減として clone リトライを 1 回許可する
 
@@ -98,7 +100,7 @@ type ExternalRepoFixture = {
 - 目的: `exec_command` 前後で参照情報が整合することを確認
 - 対象例: `honojs/starter` の `templates/bun`
 - 手順:
-  1. `read_file(path="templates/bun/package.json")` で `dev` script を確認
+  1. `read_file(path="templates/bun/package.json")` で `build` script を確認
   2. `exec_command(cwd="templates/bun", command=["bun","run","build"])`
   3. `git_status_summary(cwd=".")` で意図しない差分がないことを確認
 - 期待結果:
@@ -130,7 +132,8 @@ type ExternalRepoFixture = {
   2. `read_file(path="templates/bun/package.json")`
   3. `exec_command(cwd="templates/bun", command=["bun","run","__not_found__"])`
 - 期待結果:
-  - 3 が `status=failure`（runtime）で、エラーメッセージに対象コマンド名を含む
+  - 3 は `status=success` で `exit_code != 0`（コマンド実行失敗は終了コードで判定）
+  - 3 の `stderr` または `stdout` に失敗したコマンド名（`__not_found__`）が含まれる
   - 失敗時でも 1, 2 の取得結果がテストログに残る
 
 利用ツール: `tree` -> `read_file` -> `exec_command`
@@ -141,6 +144,7 @@ type ExternalRepoFixture = {
   - `test:e2e` スクリプトを追加（シナリオテスト一式を実行）
 - `.github/workflows/e2e-scenarios.yml`
   - `on.push.branches: [main]` で `bun run test:e2e` を実行
+  - `pull_request` トリガーは設定しない
   - `strategy.matrix.os` を使用し、`runs-on: ${{ matrix.os }}` で実行環境を切り替える
   - 対象 OS は `ubuntu-latest` / `macos-latest` / `windows-latest` の 3 種とする
 - `test/scenario/external_repo_scenarios.test.ts`
@@ -156,6 +160,7 @@ type ExternalRepoFixture = {
 
 - 5 シナリオすべてが `bun run test:e2e` で実行される
 - `main` への push ごとに CI で `bun run test:e2e` が実行される
+- `pull_request` では CI が `test:e2e` を実行しない
 - 通常 `bun test` 実行ではシナリオテストが実行されない
 - 各シナリオで 2-3 ツールの連続利用が確認できる
 - 正常系・異常系・policy 拒否系を最低 1 件ずつ含む
