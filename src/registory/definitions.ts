@@ -1,4 +1,21 @@
 export const TOOL_DEFINITIONS = {
+  git_status_summary: {
+    name: "git_status_summary",
+    description:
+      "Returns current git branch and raw porcelain status output for a workspace directory.",
+    parameters: {
+      type: "object",
+      properties: {
+        cwd: {
+          type: "string",
+          default: ".",
+          description:
+            "Workspace path to inspect (default: workspace root). Accepts / or \\\\ as separator; escape backslash in JSON (e.g. src\\\\tools).",
+        },
+      },
+      required: [],
+    },
+  },
   apply_patch: {
     name: "apply_patch",
     description:

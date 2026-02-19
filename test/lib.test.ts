@@ -176,4 +176,31 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     );
     expect(result.data.path).toBe("src/main.ts");
   });
+
+  it("正常系: git_status_summary が ToolCatalog と toolkit に登録され実行できること", async () => {
+    const mockHandler = vi.fn().mockResolvedValue({
+      repository_root: workspaceRoot,
+      branch: "main",
+      raw: "## main\n",
+    });
+    (ToolCatalog.git_status_summary as any).handler = mockHandler;
+
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { git_status_summary: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const result = await toolkit.gitStatusSummary();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") {
+      throw new Error("Expected success but got non-success");
+    }
+
+    expect(mockHandler).toHaveBeenCalledWith(context);
+    expect(result.data.branch).toBe("main");
+  });
 });

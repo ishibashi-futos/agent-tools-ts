@@ -7,6 +7,7 @@ import { applyPatch } from "./tools/edit/apply_patch/tool";
 import { readFile } from "./tools/edit/read_file/tool";
 import { tree } from "./tools/edit/tree/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
+import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { SecurityBypass } from "./security/bypass";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
@@ -59,6 +60,15 @@ export const ToolCatalog = {
     },
     handler: readFile,
   },
+  git_status_summary: {
+    metadata: {
+      name: "git_status_summary",
+      isWriteOp: false,
+      description:
+        "Returns current git branch and raw porcelain status output for a workspace directory.",
+    },
+    handler: gitStatusSummary,
+  },
 } as const;
 
 /**
@@ -81,6 +91,10 @@ export function createAgentToolkit(context: ToolContext) {
     readFile: createSecureTool(
       ToolCatalog.read_file.metadata,
       ToolCatalog.read_file.handler,
+    ).bind(null, context),
+    gitStatusSummary: createSecureTool(
+      ToolCatalog.git_status_summary.metadata,
+      ToolCatalog.git_status_summary.handler,
     ).bind(null, context),
   };
 }
