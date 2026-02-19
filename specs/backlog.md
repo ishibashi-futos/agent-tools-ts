@@ -32,10 +32,17 @@ P0: 最も高い ~ P4: 最も低い
 ## `exec` コマンド実行
 
 - [ ] [P0] exec_command: 指定したコマンドを実行し、実行結果を返します
+- [ ] [P1] exec_command(env 注入対応): 実行時に `env` を注入できるようにする（allowlist で許可キーを制御し、危険キーはデフォルト拒否）
 - [ ] spawn_service: `bun run dev` / `cargo run` などで起動した、サービスをバックグラウンドで起動する処理をスタートします
 - [ ] list_services: 起動中のサービスリストを取得します
 - [ ] get_service_logs: spawnしたサービスのログを取得します
 - [ ] stop_service: 起動したサービスを停止します
+
+## `env` 環境変数操作
+
+- [ ] [P1] read_env: 指定したキーの環境変数を取得する（全件取得は不可、キー指定必須）
+- [ ] [P2] read_env(mask): 値をマスクして返すモードをサポートする（監査ログはキー名のみ）
+- [ ] load_env_file: workspaceは以下の.envファイルを読み取る。 `.env.production` は読み取らない
 
 ## `todo` アクションアイテム管理
 
