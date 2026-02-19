@@ -3,7 +3,7 @@ import {
   type ToolContext,
   type ToolMetadata,
 } from "./factory";
-import { applyPatch } from "./tools/edit/apply_patch";
+import { applyPatch } from "./tools/edit/apply_patch/tool";
 import { tree } from "./tools/edit/tree/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { SecurityBypass } from "./security/bypass";
