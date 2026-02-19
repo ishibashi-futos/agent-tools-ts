@@ -4,6 +4,7 @@ import {
   type ToolMetadata,
 } from "./factory";
 import { applyPatch } from "./tools/edit/apply_patch";
+import { tree } from "./tools/edit/tree/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { SecurityBypass } from "./security/bypass";
 
@@ -39,6 +40,15 @@ export const ToolCatalog = {
     },
     handler: execCommand,
   },
+  tree: {
+    metadata: {
+      name: "tree",
+      isWriteOp: false,
+      description:
+        "Returns a workspace tree: directories only or directories with files.",
+    },
+    handler: tree,
+  },
 } as const;
 
 /**
@@ -53,6 +63,10 @@ export function createAgentToolkit(context: ToolContext) {
     execCommand: createSecureTool(
       ToolCatalog.exec_command.metadata,
       ToolCatalog.exec_command.handler,
+    ).bind(null, context),
+    tree: createSecureTool(
+      ToolCatalog.tree.metadata,
+      ToolCatalog.tree.handler,
     ).bind(null, context),
   };
 }

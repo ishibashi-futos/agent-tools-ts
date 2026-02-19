@@ -54,4 +54,42 @@ export const TOOL_DEFINITIONS = {
       required: ["cwd", "command"],
     },
   },
+  tree: {
+    name: "tree",
+    description:
+      "Returns a workspace tree: directories only or directories with files.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Directory path in workspace." },
+        entry_kind: {
+          type: "string",
+          enum: ["directory", "all"],
+          default: "directory",
+          description: "Node types to include (default: directory).",
+        },
+        max_depth: {
+          type: "number",
+          default: 3,
+          description: "Maximum traversal depth (default: 3).",
+        },
+        max_entries: {
+          type: "number",
+          default: 100,
+          description: "Maximum node count (default: 100).",
+        },
+        include_hidden: {
+          type: "boolean",
+          default: false,
+          description: "Include dot-prefixed entries (default: false).",
+        },
+        exclude: {
+          type: "array",
+          items: { type: "string" },
+          description: "Glob patterns to exclude paths.",
+        },
+      },
+      required: ["path"],
+    },
+  },
 };
