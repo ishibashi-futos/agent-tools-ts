@@ -4,6 +4,7 @@ import {
   type ToolMetadata,
 } from "./factory";
 import { applyPatch } from "./tools/edit/apply_patch/tool";
+import { readFile } from "./tools/edit/read_file/tool";
 import { tree } from "./tools/edit/tree/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { SecurityBypass } from "./security/bypass";
@@ -49,6 +50,15 @@ export const ToolCatalog = {
     },
     handler: tree,
   },
+  read_file: {
+    metadata: {
+      name: "read_file",
+      isWriteOp: false,
+      description:
+        "Reads a UTF-8 text file in the workspace and returns a line-limited content window.",
+    },
+    handler: readFile,
+  },
 } as const;
 
 /**
@@ -67,6 +77,10 @@ export function createAgentToolkit(context: ToolContext) {
     tree: createSecureTool(
       ToolCatalog.tree.metadata,
       ToolCatalog.tree.handler,
+    ).bind(null, context),
+    readFile: createSecureTool(
+      ToolCatalog.read_file.metadata,
+      ToolCatalog.read_file.handler,
     ).bind(null, context),
   };
 }

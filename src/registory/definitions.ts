@@ -92,4 +92,31 @@ export const TOOL_DEFINITIONS = {
       required: ["path"],
     },
   },
+  read_file: {
+    name: "read_file",
+    description:
+      "Reads a UTF-8 text file in the workspace and returns a line-limited content window.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: {
+          type: "string",
+          description:
+            'Workspace-root-relative file path to read (e.g., "src/main.ts").',
+        },
+        start_line: {
+          type: "number",
+          default: 1,
+          description:
+            "1-based start line of the returned window (default: 1).",
+        },
+        max_lines: {
+          type: "number",
+          default: 200,
+          description: "Maximum number of lines to return (default: 200).",
+        },
+      },
+      required: ["path"],
+    },
+  },
 };

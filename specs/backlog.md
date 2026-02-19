@@ -25,7 +25,7 @@ P0: 最も高い ~ P4: 最も低い
 - [x] apply_patch: ファイルを差分で書き換え
 - [ ] create_file: ファイル作成
 - [ ] create_directory: ワークスペースに新しいディレクトリを作成
-- [ ] [P0] read_file: ファイル読み取り
+- [x] [P0] read_file: ファイル読み取り
 - [ ] list_files: ファイルリスト取得
 - [x] [P0] tree: ファイル・ディレクトリツリーの取得
 

@@ -139,4 +139,41 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       throw new Error("Expected denied but got success");
     expect(result.reason).toBe("runtime");
   });
+
+  it("正常系: read_file が ToolCatalog と toolkit に登録され実行できること", async () => {
+    const mockHandler = vi.fn().mockResolvedValue({
+      path: "src/main.ts",
+      content: "hello",
+      truncated: false,
+      next_start_line: null,
+      meta: {
+        byte_length: 5,
+        line_count: 1,
+        returned_line_count: 1,
+        mtime_ms: 1,
+      },
+    });
+    (ToolCatalog.read_file as any).handler = mockHandler;
+
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { read_file: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const result = await toolkit.readFile("src/main.ts");
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") {
+      throw new Error("Expected success but got non-success");
+    }
+
+    expect(mockHandler).toHaveBeenCalledWith(
+      context,
+      resolve(workspaceRoot, "src/main.ts"),
+    );
+    expect(result.data.path).toBe("src/main.ts");
+  });
 });
