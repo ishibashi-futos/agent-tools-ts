@@ -53,3 +53,8 @@ P0: 最も高い ~ P4: 最も低い
 - [ ] todo_done: 指定した todo アイテムの完了
 - [ ] todo_remove: 指定した todo アイテムの除去
 - [ ] todo_clear: todo アイテムのクリア
+
+## ToolKit機能全般
+
+- [ ] [P0] toolKitから、 OpenAIの `ChatCompletionTool[]` 相当の tools を取得できる関数の追加(allowなものだけ)
+- [ ] [P0] ToolContextのPolicyを書くとき、toolsの入力が型定義から保管されて欲しい
