@@ -6,10 +6,10 @@ import * as os from "node:os";
 /**
  * ツールの実行コンテキスト定義
  */
-export interface ToolContext {
+export interface ToolContext<TToolName extends string = string> {
   workspaceRoot: string;
   writeScope: FileAccessMode;
-  policy: SecurityPolicyConfig;
+  policy: SecurityPolicyConfig<TToolName>;
   env: {
     platform: NodeJS.Platform;
     osRelease: string;
@@ -53,9 +53,11 @@ export interface CreateToolContextParams {
 /**
  * 環境情報を自動取得して実行コンテキストを生成するファクトリ関数
  */
-export function createToolContext(
-  params: CreateToolContextParams,
-): ToolContext {
+export function createToolContext<TToolName extends string = string>(
+  params: CreateToolContextParams & {
+    policy?: SecurityPolicyConfig<TToolName>;
+  },
+): ToolContext<TToolName> {
   return {
     workspaceRoot: params.workspaceRoot,
     writeScope: params.writeScope ?? "workspace-write",

@@ -3,8 +3,8 @@ import { AsyncLocalStorage } from "node:async_hooks";
 // ツールごとのアクセス権限レベル
 export type AccessLevel = "allow" | "deny";
 
-export interface SecurityPolicyConfig {
-  tools: Record<string, AccessLevel>;
+export interface SecurityPolicyConfig<TToolName extends string = string> {
+  tools: Partial<Record<TToolName, AccessLevel>>;
   defaultPolicy: AccessLevel;
 }
 
@@ -32,7 +32,10 @@ export const SecurityPolicy = {
    * ツールの実行が許可されているか判定する
    * @throws 拒否設定されている場合にエラーを投げる
    */
-  authorize(toolName: string, config: SecurityPolicyConfig): void {
+  authorize<TToolName extends string>(
+    toolName: TToolName,
+    config: SecurityPolicyConfig<TToolName>,
+  ): void {
     if (this.isBypassed()) return;
 
     const policy = config.tools[toolName] ?? config.defaultPolicy;

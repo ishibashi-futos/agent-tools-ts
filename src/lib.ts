@@ -1,6 +1,7 @@
 import {
   createSecureTool,
-  type ToolContext,
+  createToolContext as createBaseToolContext,
+  type ToolContext as BaseToolContext,
   type ToolMetadata,
 } from "./factory";
 import { applyPatch } from "./tools/edit/apply_patch/tool";
@@ -11,6 +12,8 @@ import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { SecurityBypass } from "./security/bypass";
 import { TOOL_DEFINITIONS } from "./registory/definitions";
 import { selectAllowedTools } from "./registory/select";
+import type { SecurityPolicyConfig } from "./security/policy";
+import type { FileAccessMode } from "./sandbox/fs";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
 
@@ -21,6 +24,16 @@ interface ToolDefinition<T extends any[], R> {
   metadata: ToolMetadata & { description: string };
   handler: (context: ToolContext, ...args: T) => Promise<R> | R;
 }
+
+type ToolName = keyof typeof TOOL_DEFINITIONS;
+export type ToolContext = BaseToolContext<ToolName>;
+export type ToolPolicy = SecurityPolicyConfig<ToolName>;
+
+type CreateToolContextParams = {
+  workspaceRoot: string;
+  writeScope?: FileAccessMode;
+  policy?: ToolPolicy;
+};
 
 /**
  * ライブラリが提供する全ツールのカタログ
@@ -73,6 +86,12 @@ export const ToolCatalog = {
   },
 } as const;
 
+export function createToolContext(
+  params: CreateToolContextParams,
+): ToolContext {
+  return createBaseToolContext<ToolName>(params);
+}
+
 /**
  * 実行環境（Context）を紐付けた安全なツールセットを生成する
  */
@@ -110,6 +129,5 @@ export { SecurityBypass };
 /**
  * 型定義の再エクスポート
  */
-export { createToolContext, type ToolContext } from "./factory";
 export type { FileAccessMode } from "./sandbox/fs";
 export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";
