@@ -31,7 +31,7 @@ P0: 最も高い ~ P4: 最も低い
 
 ## `exec` コマンド実行
 
-- [ ] [P0] exec_command: 指定したコマンドを実行し、実行結果を返します
+- [x] [P0] exec_command: 指定したコマンドを実行し、実行結果を返します
 - [ ] [P1] exec_command(env 注入対応): 実行時に `env` を注入できるようにする（allowlist で許可キーを制御し、危険キーはデフォルト拒否）
 - [ ] spawn_service: `bun run dev` / `cargo run` などで起動した、サービスをバックグラウンドで起動する処理をスタートします
 - [ ] list_services: 起動中のサービスリストを取得します

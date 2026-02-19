@@ -88,8 +88,9 @@ export function createSecureTool<T extends any[], R>(
         SandboxFS.validateAccess(context.writeScope, isWriteOp);
 
         if (typeof args[0] === "string") {
+          const normalizedPathArg = args[0].replace(/\\/g, "/");
           args[0] = SandboxPath.resolveInWorkspace(
-            args[0],
+            normalizedPathArg,
             context.workspaceRoot,
           ) as any;
         }

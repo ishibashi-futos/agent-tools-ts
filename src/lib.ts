@@ -4,6 +4,7 @@ import {
   type ToolMetadata,
 } from "./factory";
 import { applyPatch } from "./tools/edit/apply_patch";
+import { execCommand } from "./tools/exec/exec_command/tool";
 import { SecurityBypass } from "./security/bypass";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
@@ -29,6 +30,15 @@ export const ToolCatalog = {
     },
     handler: applyPatch,
   },
+  exec_command: {
+    metadata: {
+      name: "exec_command",
+      isWriteOp: false,
+      description:
+        "Runs a command once in the workspace and returns stdout, stderr, and exit code.",
+    },
+    handler: execCommand,
+  },
 } as const;
 
 /**
@@ -39,6 +49,10 @@ export function createAgentToolkit(context: ToolContext) {
     applyPatch: createSecureTool(
       ToolCatalog.apply_patch.metadata,
       ToolCatalog.apply_patch.handler,
+    ).bind(null, context),
+    execCommand: createSecureTool(
+      ToolCatalog.exec_command.metadata,
+      ToolCatalog.exec_command.handler,
     ).bind(null, context),
   };
 }
