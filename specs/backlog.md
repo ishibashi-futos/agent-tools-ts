@@ -58,5 +58,5 @@ P0: 最も高い ~ P4: 最も低い
 
 - [x] [P0] toolKitから、 OpenAIの `ChatCompletionTool[]` 相当の tools を取得できる関数の追加(現在allowなものだけ)
 - [x] [P0] `TOOL_DEFINITIONS` の `ChatCompletionTool[]` 型であることを保証するテストを追加する
-- [ ] [P0] ToolContextのPolicyを書くとき、toolsの入力が型定義から補完されて欲しい
+- [x] [P0] ToolContextのPolicyを書くとき、toolsの入力が型定義から補完されて欲しい
 - [ ] [P1] 各ツールの実用を想定した、外部リポジトリなどを用いたシナリオテスト実装
