@@ -26,7 +26,7 @@ P0: 最も高い ~ P4: 最も低い
 - [ ] create_file: ファイル作成
 - [ ] create_directory: ワークスペースに新しいディレクトリを作成
 - [ ] [P0] read_file: ファイル読み取り
-- [ ] [P0] list_files: ファイルリスト取得
+- [ ] list_files: ファイルリスト取得
 - [ ] [P0] tree: ファイル・ディレクトリツリーの取得
 
 ## `exec` コマンド実行

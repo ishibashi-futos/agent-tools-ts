@@ -1,6 +1,6 @@
 # Feature Spec Template: `tool_name`
 
-このテンプレートは、ツール仕様を最小コストで揃えるための雛形です。  
+このテンプレートは、ツール仕様を最小コストで揃えるための雛形です。
 `tool_name` を対象機能名に置き換えて使用してください。
 
 ## 1. 目的
@@ -72,10 +72,41 @@ type ToolNameOutput = {
 - `INTERNAL`: 想定外エラー
 - 必要なら機能固有エラーを追加
 
+### 4.4 Tool Definition Metadata
+
+`src/registory/definitions.ts` の `TOOL_DEFINITIONS.<tool_name>` に記載する文言を定義する。
+
+```ts
+const TOOL_NAME_DEFINITION = {
+  name: "tool_name",
+  description: "Short, clear English description.",
+  parameters: {
+    type: "object",
+    properties: {
+      input_a: {
+        type: "string",
+        description: "What this parameter means.",
+      },
+      input_b: {
+        type: "number",
+        default: 10,
+        description: "Limit value (default: 10).",
+      },
+    },
+    required: ["input_a"],
+  },
+} as const;
+```
+
+- `description` はトークン節約のため短く保ちつつ、機能の意味が 1 文で伝わる英語にする
+- `properties` で default がある項目は `default` フィールドを定義し、`description` にも `(default: X)` を明記する
+- 文言は仕様書と実装で完全一致させる
+
 ### 記入ガイド
 
 - I/O は TypeScript の型で固定する
 - 返却フィールドは利用用途が説明できるものだけに絞る
+- Tool definition の文言（`description`/`parameters`）も仕様で固定する
 
 ## 5. 検索/判定モデル設計（必要な場合）
 
@@ -169,7 +200,7 @@ type ToolNameOutput = {
 - [ ] 目的が 5 行以内で明確
 - [ ] MUST/SHOULD/WON'T が分離されている
 - [ ] Input/Output/Error が型で定義されている
+- [ ] Tool Definition Metadata（description/parameters/default）が定義されている
 - [ ] 実装分割に `tool.ts` と `usecase.ts` がある
 - [ ] Open Questions が意思決定可能な粒度
 - [ ] DoD がテスト可能
-
