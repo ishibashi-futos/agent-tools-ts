@@ -13,12 +13,36 @@ type Dependencies = {
   usecase: typeof gitStatusSummaryUsecase;
 };
 
+const WINDOWS_DRIVE_ABSOLUTE_PATH = /^[a-zA-Z]:[\\/]/;
+
+const isWindowsDriveAbsolutePath = (path: string): boolean => {
+  return WINDOWS_DRIVE_ABSOLUTE_PATH.test(path);
+};
+
 const resolveTargetCwd = (
   context: ToolContext,
   input: GitStatusSummaryValidatedInput,
 ): string => {
   if (input.cwd === undefined) {
     return context.workspaceRoot;
+  }
+
+  if (isWindowsDriveAbsolutePath(input.cwd)) {
+    if (!isWindowsDriveAbsolutePath(context.workspaceRoot)) {
+      throw new GitStatusSummaryError(
+        "INVALID_ARGUMENT",
+        "cwd must not be an absolute Windows drive path",
+      );
+    }
+
+    try {
+      return SandboxPath.resolveInWorkspace(input.cwd, context.workspaceRoot);
+    } catch {
+      throw new GitStatusSummaryError(
+        "INVALID_ARGUMENT",
+        "cwd must not be an absolute Windows drive path",
+      );
+    }
   }
 
   return SandboxPath.resolveInWorkspace(input.cwd, context.workspaceRoot);

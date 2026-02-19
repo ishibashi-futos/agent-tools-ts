@@ -1,8 +1,6 @@
 import { GitStatusSummaryError } from "./error";
 import type { GitStatusSummaryValidatedInput } from "./types";
 
-const WINDOWS_DRIVE_ABSOLUTE_PATH = /^[a-zA-Z]:[\\/]/;
-
 export const validateGitStatusSummaryInput = (
   cwd?: string,
 ): GitStatusSummaryValidatedInput => {
@@ -14,13 +12,6 @@ export const validateGitStatusSummaryInput = (
     throw new GitStatusSummaryError(
       "INVALID_ARGUMENT",
       "cwd must be a non-empty string",
-    );
-  }
-
-  if (WINDOWS_DRIVE_ABSOLUTE_PATH.test(cwd)) {
-    throw new GitStatusSummaryError(
-      "INVALID_ARGUMENT",
-      "cwd must not be an absolute Windows drive path",
     );
   }
 
