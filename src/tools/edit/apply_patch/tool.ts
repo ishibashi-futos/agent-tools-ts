@@ -6,13 +6,16 @@ import {
 } from "../../../utils/exec";
 import { toSha256Hex } from "../../../utils/hash";
 import { toInternalError } from "./error";
-import type { ApplyPatchUsecaseDependencies } from "./types";
+import type { ApplyPatchOutput, ApplyPatchUsecaseDependencies } from "./types";
 import { applyPatchUsecase, createApplyPatchUsecase } from "./usecase";
 import { validateApplyPatchInput } from "./validator";
 
 type Dependencies =
   | {
-      usecase: (input: { filePath: string; content: string }) => Promise<void>;
+      usecase: (input: {
+        filePath: string;
+        content: string;
+      }) => Promise<ApplyPatchOutput>;
       spawn?: never;
       hasher?: never;
     }
@@ -26,11 +29,14 @@ export type ApplyPatchHandler = (
   context: ToolContext,
   filePath: string,
   content: string,
-) => Promise<void>;
+) => Promise<ApplyPatchOutput>;
 
 const toUsecase = (
   deps: Dependencies,
-): ((input: { filePath: string; content: string }) => Promise<void>) => {
+): ((input: {
+  filePath: string;
+  content: string;
+}) => Promise<ApplyPatchOutput>) => {
   if ("usecase" in deps && deps.usecase) {
     return deps.usecase;
   }
@@ -52,10 +58,10 @@ export const createApplyPatch = (
     _context: ToolContext,
     filePath: string,
     content: string,
-  ): Promise<void> => {
+  ): Promise<ApplyPatchOutput> => {
     try {
       const input = validateApplyPatchInput(filePath, content);
-      await usecase(input);
+      return await usecase(input);
     } catch (error) {
       throw toInternalError(error);
     }

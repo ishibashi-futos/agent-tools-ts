@@ -56,7 +56,12 @@ type ApplyPatchInput = {
 ### 4.2 Output
 
 ```ts
-type ApplyPatchOutput = void; // 正常終了時は値を返さない
+type ApplyPatchOutput = {
+  file_path: string; // 実行対象ファイルパス（createSecureTool により正規化済み）
+  exit_code: number; // git apply の終了コード
+  changed: boolean; // 適用前後ハッシュ比較で内容変化があったか
+  stderr: string; // git apply の標準エラー（trim 済み）
+};
 ```
 
 ### 4.3 Error

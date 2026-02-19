@@ -1,7 +1,11 @@
 import { spawn } from "../../../utils/exec";
 import { toSha256Hex } from "../../../utils/hash";
 import { ApplyPatchError } from "./error";
-import type { ApplyPatchInput, ApplyPatchUsecaseDependencies } from "./types";
+import type {
+  ApplyPatchInput,
+  ApplyPatchOutput,
+  ApplyPatchUsecaseDependencies,
+} from "./types";
 
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -28,7 +32,7 @@ export const createApplyPatchUsecase = (
     hasher: toSha256Hex,
   },
 ) => {
-  return async (input: ApplyPatchInput): Promise<void> => {
+  return async (input: ApplyPatchInput): Promise<ApplyPatchOutput> => {
     await ensureTargetFile(input.filePath);
 
     const beforeHash = await deps.hasher(await Bun.file(input.filePath).text());
@@ -48,6 +52,13 @@ export const createApplyPatchUsecase = (
         `git apply failed with exit code ${exitCode}: ${stderr.trim() || "unknown error"}`,
       );
     }
+
+    return {
+      file_path: input.filePath,
+      exit_code: exitCode,
+      changed: beforeHash !== afterHash,
+      stderr: stderr.trim(),
+    };
   };
 };
 

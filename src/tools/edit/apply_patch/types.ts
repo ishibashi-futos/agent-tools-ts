@@ -12,6 +12,13 @@ export type ApplyPatchInput = {
   content: string;
 };
 
+export type ApplyPatchOutput = {
+  file_path: string;
+  exit_code: number;
+  changed: boolean;
+  stderr: string;
+};
+
 export type ApplyPatchUsecaseDependencies = {
   spawn: (cmd: string[], opts?: SpawnOptions) => Promise<SpawnResult>;
   hasher: (input: string) => Promise<string>;

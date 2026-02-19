@@ -146,8 +146,12 @@ describe("createApplyPatch", () => {
       hasher,
     });
 
-    await applyPatch(context, filePath, "patch content");
+    const result = await applyPatch(context, filePath, "patch content");
     expect(await Bun.file(filePath).text()).toBe("after");
+    expect(result.file_path).toBe(filePath);
+    expect(result.exit_code).toBe(1);
+    expect(result.changed).toBe(true);
+    expect(result.stderr).toBe("apply warning");
     expect(spawn).toHaveBeenCalledWith(
       ["git", "apply", "--whitespace=fix", "--include", filePath, "-"],
       { stdin: Buffer.from("patch content") },
@@ -174,8 +178,12 @@ describe("createApplyPatch", () => {
       hasher,
     });
 
-    await applyPatch(context, filePath, "patch content");
+    const result = await applyPatch(context, filePath, "patch content");
     expect(await Bun.file(filePath).text()).toBe("before");
+    expect(result.file_path).toBe(filePath);
+    expect(result.exit_code).toBe(0);
+    expect(result.changed).toBe(false);
+    expect(result.stderr).toBe("");
     expect(spawn).toHaveBeenCalledWith(
       ["git", "apply", "--whitespace=fix", "--include", filePath, "-"],
       { stdin: Buffer.from("patch content") },
