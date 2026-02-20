@@ -1,7 +1,7 @@
 {
   "name": "agent-tools-ts",
   "module": "index.ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "./src/lib.ts",
   "types": "./src/lib.ts",
   "exports": {
