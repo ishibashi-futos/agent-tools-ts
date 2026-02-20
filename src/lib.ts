@@ -11,6 +11,7 @@ import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { SecurityBypass } from "./security/bypass";
 import { TOOL_DEFINITIONS } from "./registory/definitions";
+import { createInvoke } from "./toolkit/invoke/index";
 import { selectAllowedTools } from "./registory/select";
 import type { SecurityPolicyConfig } from "./security/policy";
 import type { FileAccessMode } from "./sandbox/fs";
@@ -96,12 +97,12 @@ export function createToolContext(
  * 実行環境（Context）を紐付けた安全なツールセットを生成する
  */
 export function createAgentToolkit(context: ToolContext) {
-  return {
-    applyPatch: createSecureTool(
+  const tools = {
+    apply_patch: createSecureTool(
       ToolCatalog.apply_patch.metadata,
       ToolCatalog.apply_patch.handler,
     ).bind(null, context),
-    execCommand: createSecureTool(
+    exec_command: createSecureTool(
       ToolCatalog.exec_command.metadata,
       ToolCatalog.exec_command.handler,
     ).bind(null, context),
@@ -109,14 +110,19 @@ export function createAgentToolkit(context: ToolContext) {
       ToolCatalog.tree.metadata,
       ToolCatalog.tree.handler,
     ).bind(null, context),
-    readFile: createSecureTool(
+    read_file: createSecureTool(
       ToolCatalog.read_file.metadata,
       ToolCatalog.read_file.handler,
     ).bind(null, context),
-    gitStatusSummary: createSecureTool(
+    git_status_summary: createSecureTool(
       ToolCatalog.git_status_summary.metadata,
       ToolCatalog.git_status_summary.handler,
     ).bind(null, context),
+  };
+
+  return {
+    tools,
+    invoke: createInvoke({ context, catalog: ToolCatalog }),
     getAllowedTools: () => selectAllowedTools(TOOL_DEFINITIONS, context.policy),
   };
 }
@@ -131,3 +137,10 @@ export { SecurityBypass };
  */
 export type { FileAccessMode } from "./sandbox/fs";
 export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";
+export type { InvokeToolErrorCode } from "./toolkit/invoke/error";
+export type {
+  ToolArgsByName,
+  ToolResultByName,
+  ToolkitInvokeOutput,
+  Invoke,
+} from "./toolkit/invoke/index";

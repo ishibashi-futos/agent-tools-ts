@@ -28,7 +28,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     };
 
     const toolkit = createAgentToolkit(context);
-    const result = await toolkit.applyPatch("src/main.ts", "patch data");
+    const result = await toolkit.tools.apply_patch("src/main.ts", "patch data");
 
     // 型絞り込み
     expect(result.status).toBe("success");
@@ -51,7 +51,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     };
 
     const toolkit = createAgentToolkit(context);
-    const result = await toolkit.applyPatch("src/main.ts", "data");
+    const result = await toolkit.tools.apply_patch("src/main.ts", "data");
 
     expect(result.status).toBe("denied");
     if (result.status !== "denied")
@@ -69,7 +69,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     };
 
     const toolkit = createAgentToolkit(context);
-    const result = await toolkit.applyPatch("src/main.ts", "data");
+    const result = await toolkit.tools.apply_patch("src/main.ts", "data");
 
     expect(result.status).toBe("denied");
     if (result.status !== "denied")
@@ -87,7 +87,10 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     };
 
     const toolkit = createAgentToolkit(context);
-    const result = await toolkit.applyPatch("../../../etc/passwd", "data");
+    const result = await toolkit.tools.apply_patch(
+      "../../../etc/passwd",
+      "data",
+    );
 
     expect(result.status).toBe("denied");
     if (result.status !== "denied")
@@ -110,12 +113,12 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const toolkit = createAgentToolkit(context);
 
     // 1. 通常は denied
-    const deniedResult = await toolkit.applyPatch("src/main.ts", "data");
+    const deniedResult = await toolkit.tools.apply_patch("src/main.ts", "data");
     expect(deniedResult.status).toBe("denied");
 
     // 2. バイパス実行
     const successResult = await SecurityBypass.run(async () => {
-      return await toolkit.applyPatch("src/main.ts", "data");
+      return await toolkit.tools.apply_patch("src/main.ts", "data");
     });
 
     expect(successResult.status).toBe("success");
@@ -132,7 +135,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const toolkit = createAgentToolkit(context);
 
     // 型安全性を無視して null を渡す
-    const result = await toolkit.applyPatch(null as any, "data");
+    const result = await toolkit.tools.apply_patch(null as any, "data");
 
     expect(result.status).toBe("failure");
     if (result.status !== "failure")
@@ -163,7 +166,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     };
 
     const toolkit = createAgentToolkit(context);
-    const result = await toolkit.readFile("src/main.ts");
+    const result = await toolkit.tools.read_file("src/main.ts");
 
     expect(result.status).toBe("success");
     if (result.status !== "success") {
@@ -193,7 +196,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     };
 
     const toolkit = createAgentToolkit(context);
-    const result = await toolkit.gitStatusSummary();
+    const result = await toolkit.tools.git_status_summary();
 
     expect(result.status).toBe("success");
     if (result.status !== "success") {
@@ -202,6 +205,44 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
 
     expect(mockHandler).toHaveBeenCalledWith(context);
     expect(result.data.branch).toBe("main");
+  });
+
+  it("正常系: invoke で read_file を実行し role/name/content を返すこと", async () => {
+    const mockHandler = vi.fn().mockResolvedValue({
+      path: "src/main.ts",
+      content: "hello",
+      truncated: false,
+      next_start_line: null,
+      meta: {
+        byte_length: 5,
+        line_count: 1,
+        returned_line_count: 1,
+        mtime_ms: 1,
+      },
+    });
+    (ToolCatalog.read_file as any).handler = mockHandler;
+
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { read_file: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const result = await toolkit.invoke("read_file", { path: "src/main.ts" });
+
+    expect(result.role).toBe("function");
+    expect(result.name).toBe("read_file");
+    expect(result.content.path).toBe("src/main.ts");
+    expect(mockHandler).toHaveBeenCalledWith(
+      context,
+      resolve(workspaceRoot, "src/main.ts"),
+      {
+        start_line: undefined,
+        max_lines: undefined,
+      },
+    );
   });
 
   it("正常系: getAllowedTools は defaultPolicy=deny で allow 指定のみ返すこと", () => {
