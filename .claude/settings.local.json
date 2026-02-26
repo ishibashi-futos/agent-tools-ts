@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "allow": ["Bash(bun test)", "Bash(bun run typecheck)", "Bash(bun run sanity)"],
+    "deny": ["Bash(git add)"]
+  }
+}

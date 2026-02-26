@@ -49,3 +49,13 @@ if (result.status === "success") {
   console.error(`Failed (${result.reason}): ${result.message}`);
 }
 ```
+
+## Development in Docker
+
+Run with LM Studio.
+
+```bash
+WIN_IP=$(ip route | awk '/default/ {print $3; exit}')
+docker run -it --rm --add-host=host.docker.internal:$WIN_IP -v $(pwd):/workspace:rw claude:node24 bash
+claude --dangerously-skip-permissions --model {model-name}
+```
