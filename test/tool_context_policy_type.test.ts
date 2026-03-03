@@ -9,6 +9,7 @@ function typeAssertions(): void {
       tools: {
         read_file: "allow",
         exec_command: "deny",
+        write_file: "allow",
       },
       defaultPolicy: "deny",
     },

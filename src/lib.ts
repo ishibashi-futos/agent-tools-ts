@@ -7,6 +7,7 @@ import {
 import { applyPatch } from "./tools/edit/apply_patch/tool";
 import { readFile } from "./tools/edit/read_file/tool";
 import { tree } from "./tools/edit/tree/tool";
+import { writeFile } from "./tools/edit/write_file/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { SecurityBypass } from "./security/bypass";
@@ -58,6 +59,15 @@ export const ToolCatalog = {
     },
     handler: execCommand,
   },
+  write_file: {
+    metadata: {
+      name: "write_file",
+      isWriteOp: true,
+      description:
+        "Writes UTF-8 text to a file in the workspace. Use this for full content writes or creating new files.",
+    },
+    handler: writeFile,
+  },
   tree: {
     metadata: {
       name: "tree",
@@ -105,6 +115,10 @@ export function createAgentToolkit(context: ToolContext) {
     exec_command: createSecureTool(
       ToolCatalog.exec_command.metadata,
       ToolCatalog.exec_command.handler,
+    ).bind(null, context),
+    write_file: createSecureTool(
+      ToolCatalog.write_file.metadata,
+      ToolCatalog.write_file.handler,
     ).bind(null, context),
     tree: createSecureTool(
       ToolCatalog.tree.metadata,

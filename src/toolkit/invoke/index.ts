@@ -12,6 +12,10 @@ import type {
 } from "../../tools/edit/read_file/types";
 import type { TreeInput, TreeOutput } from "../../tools/edit/tree/types";
 import type {
+  WriteFileInput,
+  WriteFileOutput,
+} from "../../tools/edit/write_file/types";
+import type {
   ExecCommandOptions,
   ExecCommandOutput,
 } from "../../tools/exec/exec_command/types";
@@ -23,6 +27,7 @@ import { InvokeToolError } from "./error";
 
 export type ToolArgsByName = {
   apply_patch: ApplyPatchInput;
+  write_file: WriteFileInput;
   exec_command: {
     cwd: string;
     command: string[];
@@ -38,6 +43,7 @@ export type ToolArgsByName = {
 
 export type ToolResultByName = {
   apply_patch: ApplyPatchOutput;
+  write_file: WriteFileOutput;
   exec_command: ExecCommandOutput;
   tree: TreeOutput;
   read_file: ReadFileOutput;
@@ -79,7 +85,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 };
 
 const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
-  apply_patch: (args) => [args.filePath, args.content],
+  apply_patch: (args) => [args.filePath, args.patch],
+  write_file: (args) => [args.path, args.content],
   exec_command: (args) => [
     args.cwd,
     args.command,

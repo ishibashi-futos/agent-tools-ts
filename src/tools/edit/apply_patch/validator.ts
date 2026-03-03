@@ -3,7 +3,7 @@ import type { ApplyPatchInput } from "./types";
 
 export const validateApplyPatchInput = (
   filePath: string,
-  content: string,
+  patch: string,
 ): ApplyPatchInput => {
   if (typeof filePath !== "string" || filePath.trim().length === 0) {
     throw new ApplyPatchError(
@@ -12,12 +12,12 @@ export const validateApplyPatchInput = (
     );
   }
 
-  if (typeof content !== "string") {
-    throw new ApplyPatchError("INVALID_ARGUMENT", "content must be a string");
+  if (typeof patch !== "string") {
+    throw new ApplyPatchError("INVALID_ARGUMENT", "patch must be a string");
   }
 
   return {
     filePath,
-    content,
+    patch,
   };
 };

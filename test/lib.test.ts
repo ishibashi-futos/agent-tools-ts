@@ -207,6 +207,37 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     expect(result.data.branch).toBe("main");
   });
 
+  it("正常系: write_file が ToolCatalog と toolkit に登録され実行できること", async () => {
+    const mockHandler = vi.fn().mockResolvedValue({
+      path: "src/new.ts",
+      created: true,
+      bytes_written: 12,
+    });
+    (ToolCatalog.write_file as any).handler = mockHandler;
+
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { write_file: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const result = await toolkit.tools.write_file("src/new.ts", "const x = 1;");
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") {
+      throw new Error("Expected success but got non-success");
+    }
+
+    expect(mockHandler).toHaveBeenCalledWith(
+      context,
+      resolve(workspaceRoot, "src/new.ts"),
+      "const x = 1;",
+    );
+    expect(result.data.path).toBe("src/new.ts");
+  });
+
   it("正常系: invoke で read_file を実行し role/name/content を返すこと", async () => {
     const mockHandler = vi.fn().mockResolvedValue({
       path: "src/main.ts",
@@ -280,6 +311,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
 
     expect(names).not.toContain("exec_command");
     expect(names).toContain("apply_patch");
+    expect(names).toContain("write_file");
     expect(names).toContain("tree");
   });
 });

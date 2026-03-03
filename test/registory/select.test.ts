@@ -27,6 +27,7 @@ describe("selectAllowedTools", () => {
 
     expect(names).not.toContain("exec_command");
     expect(names).toContain("apply_patch");
+    expect(names).toContain("write_file");
     expect(names).toContain("git_status_summary");
   });
 

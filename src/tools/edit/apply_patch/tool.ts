@@ -14,7 +14,7 @@ type Dependencies =
   | {
       usecase: (input: {
         filePath: string;
-        content: string;
+        patch: string;
       }) => Promise<ApplyPatchOutput>;
       spawn?: never;
       hasher?: never;
@@ -28,14 +28,14 @@ type Dependencies =
 export type ApplyPatchHandler = (
   context: ToolContext,
   filePath: string,
-  content: string,
+  patch: string,
 ) => Promise<ApplyPatchOutput>;
 
 const toUsecase = (
   deps: Dependencies,
 ): ((input: {
   filePath: string;
-  content: string;
+  patch: string;
 }) => Promise<ApplyPatchOutput>) => {
   if ("usecase" in deps && deps.usecase) {
     return deps.usecase;
@@ -57,10 +57,10 @@ export const createApplyPatch = (
   return async (
     _context: ToolContext,
     filePath: string,
-    content: string,
+    patch: string,
   ): Promise<ApplyPatchOutput> => {
     try {
-      const input = validateApplyPatchInput(filePath, content);
+      const input = validateApplyPatchInput(filePath, patch);
       return await usecase(input);
     } catch (error) {
       throw toInternalError(error);
