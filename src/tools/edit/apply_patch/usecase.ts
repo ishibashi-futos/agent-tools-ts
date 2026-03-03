@@ -40,7 +40,7 @@ export const createApplyPatchUsecase = (
     const { exitCode, stderr } = await deps.spawn(
       ["git", "apply", "--whitespace=fix", "--include", input.filePath, "-"],
       {
-        stdin: Buffer.from(input.content),
+        stdin: Buffer.from(input.patch),
       },
     );
 

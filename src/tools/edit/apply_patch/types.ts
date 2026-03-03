@@ -9,7 +9,7 @@ export type ApplyPatchErrorCode =
 
 export type ApplyPatchInput = {
   filePath: string;
-  content: string;
+  patch: string;
 };
 
 export type ApplyPatchOutput = {

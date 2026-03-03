@@ -37,6 +37,28 @@ export const TOOL_DEFINITIONS = {
       },
     },
   },
+  write_file: {
+    type: "function",
+    function: {
+      name: "write_file",
+      description:
+        "Writes UTF-8 text to a file in the workspace. Use this for full content writes or creating new files.",
+      parameters: {
+        type: "object",
+        properties: {
+          path: {
+            type: "string",
+            description: "Workspace-root-relative file path to write.",
+          },
+          content: {
+            type: "string",
+            description: "Full UTF-8 file content to write.",
+          },
+        },
+        required: ["path", "content"],
+      },
+    },
+  },
   exec_command: {
     type: "function",
     function: {

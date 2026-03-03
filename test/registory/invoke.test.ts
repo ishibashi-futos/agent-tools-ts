@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, vi } from "bun:test";
 import { resolve } from "node:path";
 import { createInvoke } from "../../src/toolkit/invoke/index";
 import { InvokeToolError } from "../../src/toolkit/invoke/error";
@@ -56,6 +56,40 @@ describe("createInvoke", () => {
       const invokeError = error as InvokeToolError;
       expect(invokeError.code).toBe("INVALID_TOOL_ARGUMENTS_TYPE");
       expect(invokeError.tool_name).toBe("read_file");
+    }
+  });
+
+  it("apply_patch は arguments.patch をハンドラーに渡すこと", async () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { apply_patch: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const originalHandler = ToolCatalog.apply_patch.handler;
+    const mockHandler = vi.fn().mockResolvedValue({
+      file_path: resolve(workspaceRoot, "src/lib.ts"),
+      exit_code: 0,
+      changed: false,
+      stderr: "",
+    });
+    (ToolCatalog.apply_patch as any).handler = mockHandler;
+
+    try {
+      const invoke = createInvoke({ context, catalog: ToolCatalog });
+      await invoke("apply_patch", {
+        filePath: "src/lib.ts",
+        patch: "@@ -1 +1 @@\n-old\n+new\n",
+      });
+
+      expect(mockHandler).toHaveBeenCalledWith(
+        context,
+        resolve(workspaceRoot, "src/lib.ts"),
+        "@@ -1 +1 @@\n-old\n+new\n",
+      );
+    } finally {
+      (ToolCatalog.apply_patch as any).handler = originalHandler;
     }
   });
 });
