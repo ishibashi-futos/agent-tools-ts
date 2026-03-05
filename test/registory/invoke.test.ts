@@ -49,7 +49,7 @@ describe("createInvoke", () => {
     const invoke = createInvoke({ context, catalog: ToolCatalog });
 
     try {
-      await invoke("read_file", 123 as unknown as Record<string, unknown>);
+      await invoke("read_file", 123 as any);
       throw new Error("Expected invoke to throw");
     } catch (error) {
       expect(error).toBeInstanceOf(InvokeToolError);

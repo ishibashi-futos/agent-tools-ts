@@ -176,3 +176,5 @@ export const TOOL_DEFINITIONS = {
     },
   },
 } as const satisfies Record<string, Tool>;
+
+export type AllowedToolName = keyof typeof TOOL_DEFINITIONS;

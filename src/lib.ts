@@ -11,7 +11,10 @@ import { writeFile } from "./tools/edit/write_file/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { SecurityBypass } from "./security/bypass";
-import { TOOL_DEFINITIONS } from "./registory/definitions";
+import {
+  TOOL_DEFINITIONS,
+  type AllowedToolName,
+} from "./registory/definitions";
 import { createInvoke } from "./toolkit/invoke/index";
 import { selectAllowedTools } from "./registory/select";
 import type { SecurityPolicyConfig } from "./security/policy";
@@ -27,7 +30,7 @@ interface ToolDefinition<T extends any[], R> {
   handler: (context: ToolContext, ...args: T) => Promise<R> | R;
 }
 
-type ToolName = keyof typeof TOOL_DEFINITIONS;
+type ToolName = AllowedToolName;
 export type ToolContext = BaseToolContext<ToolName>;
 export type ToolPolicy = SecurityPolicyConfig<ToolName>;
 
@@ -151,6 +154,7 @@ export { SecurityBypass };
  */
 export type { FileAccessMode } from "./sandbox/fs";
 export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";
+export type { AllowedToolName } from "./registory/definitions";
 export type { InvokeToolErrorCode } from "./toolkit/invoke/error";
 export type {
   ToolArgsByName,
