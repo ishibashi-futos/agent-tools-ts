@@ -1,8 +1,8 @@
 # agent-tools-ts
 
-## Developmet
+## Development
 
-To install dependencies:
+依存関係をインストール:
 
 ```bash
 bun install
@@ -10,7 +10,7 @@ bun install
 
 ## Usage
 
-Add the package to your Bun project directly from GitHub:
+GitHub から Bun プロジェクトに追加:
 
 ```bash
 bun add github:ishibashi-futos/agent-tools-ts#main
@@ -18,41 +18,51 @@ bun add github:ishibashi-futos/agent-tools-ts#main
 
 ```typescript
 import {
+  createToolContext,
   createAgentToolkit,
-  type ToolContext
 } from "agent-tools-ts";
 
-const context: ToolContext = {
-  // The absolute path to your project root
+const context = createToolContext({
+  // プロジェクトルートの絶対パス
   workspaceRoot: process.cwd(),
-  // Permission levels: "read-only", "workspace-write", or "unrestricted"
+  // 権限レベル: "read-only" | "workspace-write" | "unrestricted"
   writeScope: "workspace-write",
   policy: {
-    // Explicitly allow or deny specific tools
+    // ツールごとの許可/拒否
     tools: {
-      apply_patch: "allow"
+      apply_patch: "allow",
+      read_file: "allow",
     },
-    // Default fallback policy: "allow" or "deny"
-    defaultPolicy: "deny"
-  }
-};
+    // 未指定ツールに適用する既定ポリシー
+    defaultPolicy: "deny",
+  },
+});
 
-// Create a secured toolkit bound to the context
+// Context に紐づく安全な toolkit を生成
 const toolkit = createAgentToolkit(context);
 
-// Now your agent can execute tools safely
-const result = await toolkit.applyPatch(filePath, patchContent);
+// 直接呼び出し API（tools 配下）
+const patch = "@@ -1 +1 @@\n-old\n+new\n";
+const result = await toolkit.tools.apply_patch("README.md", patch);
 
 if (result.status === "success") {
-  console.log("Patch applied successfully:", result.data);
+  console.log("Patch applied:", result.data);
 } else {
   console.error(`Failed (${result.reason}): ${result.message}`);
+  console.error(`Error code: ${result.error.code}`);
 }
+
+// invoke API（name + args で実行）
+const invoked = await toolkit.invoke("read_file", {
+  path: "README.md",
+  max_lines: 20,
+});
+console.log(invoked.role, invoked.name, invoked.content);
 ```
 
 ## Development in Docker
 
-Run with LM Studio.
+LM Studio と連携して実行:
 
 ```bash
 WIN_IP=$(ip route | awk '/default/ {print $3; exit}')

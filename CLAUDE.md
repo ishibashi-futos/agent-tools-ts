@@ -25,6 +25,7 @@ The core architecture revolves around:
 
 The toolkit provides several core tools:
 - `apply_patch`: Applies git patches to files (uses git apply)
+- `write_file`: Writes UTF-8 text files in the workspace
 - `exec_command`: Executes shell commands in the workspace
 - `tree`: Lists directory structures
 - `read_file`: Reads text files with line limits
@@ -108,11 +109,14 @@ const context = createToolContext({
 
 const toolkit = createAgentToolkit(context);
 
-// Using direct tool calls (old API)
-const result = await toolkit.tools.applyPatch(filePath, patchContent);
+// 直接呼び出し API（tools 配下）
+const result = await toolkit.tools.apply_patch(filePath, patchContent);
 
-// Using invoke API (new preferred approach)
-const result = await toolkit.invoke("apply_patch", { filePath, content });
+// invoke API（name + args）
+const invoked = await toolkit.invoke("apply_patch", {
+  filePath,
+  patch: patchContent,
+});
 ```
 
 ## Security Model
