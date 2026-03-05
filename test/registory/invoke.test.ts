@@ -76,6 +76,12 @@ describe("createInvoke", () => {
       const invokeError = error as InvokeToolError;
       expect(invokeError.code).toBe("INVALID_TOOL_ARGUMENTS_TYPE");
       expect(invokeError.tool_name).toBe("read_file");
+      expect(invokeError.toEnvelope()).toEqual({
+        code: "INVALID_TOOL_ARGUMENTS_TYPE",
+        message: "args must be an object",
+        retriable: false,
+        details: { tool_name: "read_file" },
+      });
     }
   });
 
