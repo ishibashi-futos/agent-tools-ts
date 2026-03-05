@@ -32,12 +32,11 @@ describe("exec_command tool", () => {
       );
       const context = createContext(workspaceRoot);
 
-      const result = await secureExecCommand(
-        context,
-        ".",
-        [process.execPath, "-e", "console.log('hello')"],
-        { shell_mode: "direct" },
-      );
+      const result = await secureExecCommand(context, {
+        cwd: ".",
+        command: [process.execPath, "-e", "console.log('hello')"],
+        shell_mode: "direct",
+      });
 
       expect(result.status).toBe("success");
       if (result.status !== "success") {
@@ -60,12 +59,11 @@ describe("exec_command tool", () => {
       );
       const context = createContext(workspaceRoot);
 
-      const result = await secureExecCommand(
-        context,
-        "missing",
-        [process.execPath, "-e", "console.log('hello')"],
-        { shell_mode: "direct" },
-      );
+      const result = await secureExecCommand(context, {
+        cwd: "missing",
+        command: [process.execPath, "-e", "console.log('hello')"],
+        shell_mode: "direct",
+      });
 
       expect(result.status).toBe("failure");
       if (result.status !== "failure") {
@@ -87,7 +85,9 @@ describe("exec_command tool", () => {
       );
       const context = createContext(workspaceRoot);
 
-      const result = await secureExecCommand(context, ".", [] as string[], {
+      const result = await secureExecCommand(context, {
+        cwd: ".",
+        command: [] as string[],
         shell_mode: "direct",
       });
 
@@ -111,15 +111,12 @@ describe("exec_command tool", () => {
       );
       const context = createContext(workspaceRoot);
 
-      const result = await secureExecCommand(
-        context,
-        ".",
-        [process.execPath, "-e", "setTimeout(() => {}, 5000)"],
-        {
-          shell_mode: "direct",
-          timeout_ms: 50,
-        },
-      );
+      const result = await secureExecCommand(context, {
+        cwd: ".",
+        command: [process.execPath, "-e", "setTimeout(() => {}, 5000)"],
+        shell_mode: "direct",
+        timeout_ms: 50,
+      });
 
       expect(result.status).toBe("success");
       if (result.status !== "success") {
@@ -142,19 +139,16 @@ describe("exec_command tool", () => {
       );
       const context = createContext(workspaceRoot);
 
-      const result = await secureExecCommand(
-        context,
-        ".",
-        [
+      const result = await secureExecCommand(context, {
+        cwd: ".",
+        command: [
           process.execPath,
           "-e",
           "console.log('x'.repeat(5000)); console.error('y'.repeat(5000));",
         ],
-        {
-          shell_mode: "direct",
-          max_output_chars: 1_000,
-        },
-      );
+        shell_mode: "direct",
+        max_output_chars: 1_000,
+      });
 
       expect(result.status).toBe("success");
       if (result.status !== "success") {

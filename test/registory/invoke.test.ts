@@ -92,4 +92,44 @@ describe("createInvoke", () => {
       (ToolCatalog.apply_patch as any).handler = originalHandler;
     }
   });
+
+  it("exec_command は単一オブジェクト引数をハンドラーに渡すこと", async () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { exec_command: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const originalHandler = ToolCatalog.exec_command.handler;
+    const mockHandler = vi.fn().mockResolvedValue({
+      cwd: resolve(workspaceRoot, "."),
+      command: ["echo", "ok"],
+      exit_code: 0,
+      stdout: "ok\n",
+      stderr: "",
+      stdout_truncated: false,
+      stderr_truncated: false,
+      timed_out: false,
+      duration_ms: 1,
+    });
+    (ToolCatalog.exec_command as any).handler = mockHandler;
+
+    try {
+      const invoke = createInvoke({ context, catalog: ToolCatalog });
+      await invoke("exec_command", {
+        cwd: ".",
+        command: ["echo", "ok"],
+        shell_mode: "direct",
+      });
+
+      expect(mockHandler).toHaveBeenCalledWith(context, {
+        cwd: resolve(workspaceRoot, "."),
+        command: ["echo", "ok"],
+        shell_mode: "direct",
+      });
+    } finally {
+      (ToolCatalog.exec_command as any).handler = originalHandler;
+    }
+  });
 });

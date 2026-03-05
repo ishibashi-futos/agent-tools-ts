@@ -1,7 +1,7 @@
 import { stat } from "node:fs/promises";
 import type { ToolContext } from "../../../factory";
 import { ExecCommandError, toInternalError } from "./error";
-import type { ExecCommandOptions, ExecCommandOutput } from "./types";
+import type { ExecCommandInput, ExecCommandOutput } from "./types";
 import { execCommandUsecase } from "./usecase";
 import { validateExecCommandInput } from "./validator";
 
@@ -11,9 +11,7 @@ type Dependencies = {
 
 export type ExecCommandHandler = (
   context: ToolContext,
-  cwd: string,
-  command: string[],
-  options?: ExecCommandOptions,
+  input: ExecCommandInput,
 ) => Promise<ExecCommandOutput>;
 
 export const createExecCommand = (
@@ -23,32 +21,30 @@ export const createExecCommand = (
 ): ExecCommandHandler => {
   return async (
     context: ToolContext,
-    cwd: string,
-    command: string[],
-    options: ExecCommandOptions = {},
+    input: ExecCommandInput,
   ): Promise<ExecCommandOutput> => {
     try {
-      const input = validateExecCommandInput(cwd, command, options);
+      const validated = validateExecCommandInput(input);
 
       let cwdStat;
       try {
-        cwdStat = await stat(input.cwd);
+        cwdStat = await stat(validated.cwd);
       } catch {
         throw new ExecCommandError(
           "NOT_DIRECTORY",
-          `cwd is not a directory: ${input.cwd}`,
+          `cwd is not a directory: ${validated.cwd}`,
         );
       }
 
       if (!cwdStat.isDirectory()) {
         throw new ExecCommandError(
           "NOT_DIRECTORY",
-          `cwd is not a directory: ${input.cwd}`,
+          `cwd is not a directory: ${validated.cwd}`,
         );
       }
 
       return await deps.usecase({
-        ...input,
+        ...validated,
         platform: context.env.platform,
       });
     } catch (error) {

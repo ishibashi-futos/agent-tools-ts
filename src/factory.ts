@@ -81,7 +81,16 @@ export function createSecureTool<T extends any[], R>(
 
     try {
       // 入力引数の基本検証（型不正は runtime エラーとして扱う）
-      if (args.length > 0 && typeof args[0] !== "string") {
+      if (
+        args.length > 0 &&
+        typeof args[0] !== "string" &&
+        !(
+          typeof args[0] === "object" &&
+          args[0] !== null &&
+          !Array.isArray(args[0]) &&
+          typeof (args[0] as Record<string, unknown>).cwd === "string"
+        )
+      ) {
         throw new Error("Invalid path argument");
       }
       // --- Security & Sandbox Check ---
@@ -95,6 +104,21 @@ export function createSecureTool<T extends any[], R>(
             normalizedPathArg,
             context.workspaceRoot,
           ) as any;
+        } else if (
+          typeof args[0] === "object" &&
+          args[0] !== null &&
+          !Array.isArray(args[0]) &&
+          typeof (args[0] as Record<string, unknown>).cwd === "string"
+        ) {
+          const input = args[0] as Record<string, unknown>;
+          const normalizedCwd = (input.cwd as string).replace(/\\/g, "/");
+          args[0] = {
+            ...input,
+            cwd: SandboxPath.resolveInWorkspace(
+              normalizedCwd,
+              context.workspaceRoot,
+            ),
+          } as any;
         }
       } catch (e: any) {
         // 拒否時は ToolError 型を返す

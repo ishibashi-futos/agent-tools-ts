@@ -16,7 +16,7 @@ import type {
   WriteFileOutput,
 } from "../../tools/edit/write_file/types";
 import type {
-  ExecCommandOptions,
+  ExecCommandInput,
   ExecCommandOutput,
 } from "../../tools/exec/exec_command/types";
 import type {
@@ -28,14 +28,7 @@ import { InvokeToolError } from "./error";
 export type ToolArgsByName = {
   apply_patch: ApplyPatchInput;
   write_file: WriteFileInput;
-  exec_command: {
-    cwd: string;
-    command: string[];
-    shell_mode?: ExecCommandOptions["shell_mode"];
-    stdin?: ExecCommandOptions["stdin"];
-    timeout_ms?: ExecCommandOptions["timeout_ms"];
-    max_output_chars?: ExecCommandOptions["max_output_chars"];
-  };
+  exec_command: ExecCommandInput;
   tree: TreeInput;
   read_file: ReadFileInput;
   git_status_summary: GitStatusSummaryInput;
@@ -87,16 +80,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
   apply_patch: (args) => [args.filePath, args.patch],
   write_file: (args) => [args.path, args.content],
-  exec_command: (args) => [
-    args.cwd,
-    args.command,
-    {
-      shell_mode: args.shell_mode,
-      stdin: args.stdin,
-      timeout_ms: args.timeout_ms,
-      max_output_chars: args.max_output_chars,
-    },
-  ],
+  exec_command: (args) => [args],
   tree: (args) => [
     args.path,
     {
@@ -118,9 +102,28 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
 };
 
 const normalizeArgsForSandbox = (
+  toolName: ToolName,
   args: unknown[],
   workspaceRoot: string,
 ): unknown[] => {
+  if (
+    toolName === "exec_command" &&
+    typeof args[0] === "object" &&
+    args[0] !== null &&
+    !Array.isArray(args[0])
+  ) {
+    const input = args[0] as Record<string, unknown>;
+    if (typeof input.cwd === "string") {
+      const normalizedCwd = input.cwd.replace(/\\/g, "/");
+      const resolved = SandboxPath.resolveInWorkspace(
+        normalizedCwd,
+        workspaceRoot,
+      );
+      return [{ ...input, cwd: resolved }, ...args.slice(1)];
+    }
+    return args;
+  }
+
   if (typeof args[0] !== "string") {
     return args;
   }
@@ -181,6 +184,7 @@ export const createInvoke = ({ context, catalog }: InvokeParams): Invoke => {
     );
     const rawArgs = TOOL_ARGUMENT_RESOLVERS[name](args);
     const resolvedArgs = normalizeArgsForSandbox(
+      name,
       rawArgs,
       context.workspaceRoot,
     );

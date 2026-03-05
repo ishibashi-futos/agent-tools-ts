@@ -1,13 +1,15 @@
 export type ExecCommandShellMode = "default" | "direct";
 
-export type ExecCommandOptions = {
+export type ExecCommandInput = {
+  cwd: string;
+  command: string[];
   shell_mode?: ExecCommandShellMode;
   stdin?: string;
   timeout_ms?: number;
   max_output_chars?: number;
 };
 
-export type ExecCommandInput = {
+export type ExecCommandValidatedInput = {
   cwd: string;
   command: string[];
   shell_mode: ExecCommandShellMode;

@@ -1,5 +1,5 @@
 import { ExecCommandError } from "./error";
-import type { ExecCommandInput, ExecCommandOptions } from "./types";
+import type { ExecCommandInput, ExecCommandValidatedInput } from "./types";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_OUTPUT_CHARS = 200_000;
@@ -9,25 +9,23 @@ const MIN_MAX_OUTPUT_CHARS = 1_000;
 const MAX_MAX_OUTPUT_CHARS = 1_000_000;
 
 export const validateExecCommandInput = (
-  cwd: string,
-  command: string[],
-  options: ExecCommandOptions = {},
-): ExecCommandInput => {
-  if (typeof cwd !== "string" || cwd.trim().length === 0) {
+  input: ExecCommandInput,
+): ExecCommandValidatedInput => {
+  if (typeof input.cwd !== "string" || input.cwd.trim().length === 0) {
     throw new ExecCommandError(
       "INVALID_ARGUMENT",
       "cwd must be a non-empty string",
     );
   }
 
-  if (!Array.isArray(command) || command.length === 0) {
+  if (!Array.isArray(input.command) || input.command.length === 0) {
     throw new ExecCommandError(
       "INVALID_ARGUMENT",
       "command must be a non-empty string array",
     );
   }
 
-  for (const token of command) {
+  for (const token of input.command) {
     if (typeof token !== "string") {
       throw new ExecCommandError(
         "INVALID_ARGUMENT",
@@ -42,7 +40,7 @@ export const validateExecCommandInput = (
     }
   }
 
-  const shellMode = options.shell_mode ?? "default";
+  const shellMode = input.shell_mode ?? "default";
   if (shellMode !== "default" && shellMode !== "direct") {
     throw new ExecCommandError(
       "INVALID_ARGUMENT",
@@ -50,7 +48,7 @@ export const validateExecCommandInput = (
     );
   }
 
-  const timeoutMs = options.timeout_ms ?? DEFAULT_TIMEOUT_MS;
+  const timeoutMs = input.timeout_ms ?? DEFAULT_TIMEOUT_MS;
   if (
     typeof timeoutMs !== "number" ||
     !Number.isFinite(timeoutMs) ||
@@ -63,7 +61,7 @@ export const validateExecCommandInput = (
     );
   }
 
-  const maxOutputChars = options.max_output_chars ?? DEFAULT_MAX_OUTPUT_CHARS;
+  const maxOutputChars = input.max_output_chars ?? DEFAULT_MAX_OUTPUT_CHARS;
   if (
     typeof maxOutputChars !== "number" ||
     !Number.isFinite(maxOutputChars) ||
@@ -76,15 +74,15 @@ export const validateExecCommandInput = (
     );
   }
 
-  if (options.stdin !== undefined && typeof options.stdin !== "string") {
+  if (input.stdin !== undefined && typeof input.stdin !== "string") {
     throw new ExecCommandError("INVALID_ARGUMENT", "stdin must be a string");
   }
 
   return {
-    cwd,
-    command,
+    cwd: input.cwd,
+    command: input.command,
     shell_mode: shellMode,
-    stdin: options.stdin,
+    stdin: input.stdin,
     timeout_ms: timeoutMs,
     max_output_chars: maxOutputChars,
   };
