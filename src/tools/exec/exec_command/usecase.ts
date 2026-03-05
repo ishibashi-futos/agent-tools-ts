@@ -4,9 +4,9 @@ import {
   type SpawnResult,
 } from "../../../utils/exec";
 import { resolveExecutionCommand } from "./resolve_command";
-import type { ExecCommandInput, ExecCommandOutput } from "./types";
+import type { ExecCommandOutput, ExecCommandValidatedInput } from "./types";
 
-export type ExecCommandUsecaseInput = ExecCommandInput & {
+export type ExecCommandUsecaseInput = ExecCommandValidatedInput & {
   platform: NodeJS.Platform;
 };
 

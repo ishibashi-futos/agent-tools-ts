@@ -39,15 +39,12 @@ export const createGitStatusSummaryUsecase = (
     context: ToolContext,
     cwd: string,
   ): Promise<GitStatusSummaryOutput> => {
-    const revParseResult = await deps.execCommand(
-      context,
+    const revParseResult = await deps.execCommand(context, {
       cwd,
-      REPOSITORY_ROOT_COMMAND,
-      {
-        shell_mode: "direct",
-        timeout_ms: FIXED_TIMEOUT_MS,
-      },
-    );
+      command: REPOSITORY_ROOT_COMMAND,
+      shell_mode: "direct",
+      timeout_ms: FIXED_TIMEOUT_MS,
+    });
 
     if (
       isNotGitRepositoryError(revParseResult.exit_code, revParseResult.stderr)
@@ -68,7 +65,9 @@ export const createGitStatusSummaryUsecase = (
       );
     }
 
-    const statusResult = await deps.execCommand(context, cwd, STATUS_COMMAND, {
+    const statusResult = await deps.execCommand(context, {
+      cwd,
+      command: STATUS_COMMAND,
       shell_mode: "direct",
       timeout_ms: FIXED_TIMEOUT_MS,
     });
