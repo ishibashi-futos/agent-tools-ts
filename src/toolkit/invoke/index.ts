@@ -2,6 +2,7 @@ import { SandboxFS } from "../../sandbox/fs";
 import { SandboxPath } from "../../sandbox/path";
 import { SecurityPolicy } from "../../security/policy";
 import type { ToolContext } from "../../factory";
+import type { AllowedToolName } from "../../registory/definitions";
 import type {
   ApplyPatchInput,
   ApplyPatchOutput,
@@ -25,52 +26,50 @@ import type {
 } from "../../tools/git/git_status_summary/types";
 import { InvokeToolError } from "./error";
 
-export type ToolArgsByName = {
+export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
   apply_patch: ApplyPatchInput;
   write_file: WriteFileInput;
   exec_command: ExecCommandInput;
   tree: TreeInput;
   read_file: ReadFileInput;
   git_status_summary: GitStatusSummaryInput;
-};
+}
 
-export type ToolResultByName = {
+export interface ToolResultByName extends Record<AllowedToolName, unknown> {
   apply_patch: ApplyPatchOutput;
   write_file: WriteFileOutput;
   exec_command: ExecCommandOutput;
   tree: TreeOutput;
   read_file: ReadFileOutput;
   git_status_summary: GitStatusSummaryOutput;
-};
+}
 
-type ToolName = keyof ToolArgsByName;
-
-export type ToolkitInvokeOutput<TName extends ToolName> = {
+export type ToolkitInvokeOutput<TName extends AllowedToolName> = {
   role: "function";
   name: TName;
   content: ToolResultByName[TName];
 };
 
-export type Invoke = <TName extends ToolName>(
+export type Invoke = <TName extends AllowedToolName>(
   name: TName,
-  args: Record<string, unknown>,
+  args: ToolArgsByName[TName],
 ) => Promise<ToolkitInvokeOutput<TName>>;
 
-type CatalogEntry<TName extends ToolName> = {
+type CatalogEntry<TName extends AllowedToolName> = {
   metadata: {
     name: TName;
     isWriteOp: boolean;
   };
   handler: (
-    context: ToolContext<ToolName>,
+    context: ToolContext<AllowedToolName>,
     ...args: any[]
   ) => Promise<ToolResultByName[TName]> | ToolResultByName[TName];
 };
 
-type InvokeCatalog = { [TName in ToolName]: CatalogEntry<TName> };
+type InvokeCatalog = { [TName in AllowedToolName]: CatalogEntry<TName> };
 
 type ToolArgumentResolver = {
-  [TName in ToolName]: (args: Record<string, unknown>) => unknown[];
+  [TName in AllowedToolName]: (args: ToolArgsByName[TName]) => unknown[];
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -102,7 +101,7 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
 };
 
 const normalizeArgsForSandbox = (
-  toolName: ToolName,
+  toolName: AllowedToolName,
   args: unknown[],
   workspaceRoot: string,
 ): unknown[] => {
@@ -139,14 +138,14 @@ const normalizeArgsForSandbox = (
 };
 
 type InvokeParams = {
-  context: ToolContext<ToolName>;
+  context: ToolContext<AllowedToolName>;
   catalog: InvokeCatalog;
 };
 
 export const createInvoke = ({ context, catalog }: InvokeParams): Invoke => {
-  return async <TName extends ToolName>(
+  return async <TName extends AllowedToolName>(
     name: TName,
-    args: Record<string, unknown>,
+    args: ToolArgsByName[TName],
   ): Promise<ToolkitInvokeOutput<TName>> => {
     if (!(name in catalog)) {
       throw new InvokeToolError(
