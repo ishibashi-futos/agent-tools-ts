@@ -36,6 +36,12 @@ describe("factory.ts (createSecureTool)", () => {
     if (result.status !== "denied")
       throw new Error("Expected denied but got success");
     expect(result.reason).toBe("policy");
+    expect(result.error).toEqual({
+      code: "POLICY_DENIED",
+      message: expect.stringMatching(/Access denied/),
+      retriable: false,
+      details: {},
+    });
   });
 
   it("Sandbox FS Layer: Read-onlyモードでの書き込み時に status: 'denied' を返すこと", async () => {
@@ -57,6 +63,12 @@ describe("factory.ts (createSecureTool)", () => {
 
     expect(result.reason).toBe("sandbox");
     expect(result.message).toMatch(/Write operation denied/);
+    expect(result.error).toEqual({
+      code: "SANDBOX_VIOLATION",
+      message: expect.stringMatching(/Write operation denied/),
+      retriable: false,
+      details: {},
+    });
   });
 
   it("Sandbox Path Layer: ワークスペース外アクセス時に status: 'denied' を返すこと", async () => {
@@ -73,5 +85,11 @@ describe("factory.ts (createSecureTool)", () => {
 
     expect(result.reason).toBe("sandbox");
     expect(result.message).toMatch(/outside of workspace/);
+    expect(result.error).toEqual({
+      code: "SANDBOX_VIOLATION",
+      message: expect.stringMatching(/outside of workspace/),
+      retriable: false,
+      details: {},
+    });
   });
 });

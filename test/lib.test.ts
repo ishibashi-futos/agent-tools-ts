@@ -58,6 +58,12 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       throw new Error("Expected denied but got success");
     expect(result.reason).toBe("policy");
     expect(result.message).toMatch(/Access denied/);
+    expect(result.error).toEqual({
+      code: "POLICY_DENIED",
+      message: expect.stringMatching(/Access denied/),
+      retriable: false,
+      details: {},
+    });
   });
 
   it("エッジケース: Read-onlyモード時に書き込み操作をブロックすること", async () => {
@@ -76,6 +82,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       throw new Error("Expected denied but got success");
     expect(result.reason).toBe("sandbox");
     expect(result.message).toMatch(/Write operation denied/);
+    expect(result.error.code).toBe("SANDBOX_VIOLATION");
   });
 
   it("エッジケース: ディレクトリトラバーサル攻撃を遮断すること", async () => {
@@ -97,6 +104,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       throw new Error("Expected denied but got success");
     expect(result.reason).toBe("sandbox");
     expect(result.message).toMatch(/outside of workspace/);
+    expect(result.error.code).toBe("SANDBOX_VIOLATION");
   });
 
   it("高度なケース: SecurityBypassを使用すると拒否設定を無視できること", async () => {
@@ -141,6 +149,12 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     if (result.status !== "failure")
       throw new Error("Expected denied but got success");
     expect(result.reason).toBe("runtime");
+    expect(result.error).toEqual({
+      code: "RUNTIME_ERROR",
+      message: "Invalid path argument",
+      retriable: true,
+      details: {},
+    });
   });
 
   it("正常系: read_file が ToolCatalog と toolkit に登録され実行できること", async () => {

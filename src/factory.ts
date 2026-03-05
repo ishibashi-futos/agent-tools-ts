@@ -2,6 +2,7 @@ import { SecurityPolicy, type SecurityPolicyConfig } from "./security/policy";
 import { SandboxPath } from "./sandbox/path";
 import { SandboxFS, type FileAccessMode } from "./sandbox/fs";
 import * as os from "node:os";
+import type { ToolErrorEnvelope } from "./errors/envelope";
 
 /**
  * ツールの実行コンテキスト定義
@@ -37,6 +38,7 @@ export interface ToolError {
   status: "failure" | "denied";
   reason: "policy" | "sandbox" | "runtime";
   message: string;
+  error: ToolErrorEnvelope;
 }
 
 export type ToolResult<R = any> = ToolSuccess<R> | ToolError;
@@ -76,6 +78,34 @@ export function createSecureTool<T extends any[], R>(
   metadata: ToolMetadata,
   fn: (context: ToolContext, ...args: T) => Promise<R> | R,
 ) {
+  const toErrorEnvelope = (
+    reason: ToolError["reason"],
+    message: string,
+  ): ToolErrorEnvelope => {
+    if (reason === "policy") {
+      return {
+        code: "POLICY_DENIED",
+        message,
+        retriable: false,
+        details: {},
+      };
+    }
+    if (reason === "sandbox") {
+      return {
+        code: "SANDBOX_VIOLATION",
+        message,
+        retriable: false,
+        details: {},
+      };
+    }
+    return {
+      code: "RUNTIME_ERROR",
+      message,
+      retriable: true,
+      details: {},
+    };
+  };
+
   return async (context: ToolContext, ...args: T): Promise<ToolResult<R>> => {
     const { name, isWriteOp } = metadata;
 
@@ -126,6 +156,10 @@ export function createSecureTool<T extends any[], R>(
           status: "denied",
           reason: e.message.includes("Policy") ? "policy" : "sandbox",
           message: e.message,
+          error: toErrorEnvelope(
+            e.message.includes("Policy") ? "policy" : "sandbox",
+            e.message,
+          ),
         };
       }
 
@@ -140,6 +174,10 @@ export function createSecureTool<T extends any[], R>(
         status: "failure",
         reason: "runtime",
         message: e instanceof Error ? e.message : String(e),
+        error: toErrorEnvelope(
+          "runtime",
+          e instanceof Error ? e.message : String(e),
+        ),
       };
     }
   };

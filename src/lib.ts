@@ -152,6 +152,7 @@ export { SecurityBypass };
 export type { FileAccessMode } from "./sandbox/fs";
 export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";
 export type { InvokeToolErrorCode } from "./toolkit/invoke/error";
+export type { ToolErrorEnvelope } from "./errors/envelope";
 export type {
   ToolArgsByName,
   ToolResultByName,
