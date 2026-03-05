@@ -39,6 +39,26 @@ describe("createInvoke", () => {
     });
   });
 
+  it("read-only で書き込みツールを実行した場合は TOOL_NOT_ALLOWED を返すこと", async () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "read-only",
+      policy: { tools: { write_file: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+    const invoke = createInvoke({ context, catalog: ToolCatalog });
+
+    await expect(
+      invoke("write_file", {
+        path: "tmp.txt",
+        content: "hello",
+      }),
+    ).rejects.toMatchObject({
+      code: "TOOL_NOT_ALLOWED",
+      tool_name: "write_file",
+    });
+  });
+
   it("args が object 以外の場合は INVALID_TOOL_ARGUMENTS_TYPE を返すこと", async () => {
     const context: ToolContext = {
       workspaceRoot,

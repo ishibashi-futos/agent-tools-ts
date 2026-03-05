@@ -178,10 +178,21 @@ export const createInvoke = ({ context, catalog }: InvokeParams): Invoke => {
       );
     }
 
-    SandboxFS.validateAccess(
-      context.writeScope,
-      catalogEntry.metadata.isWriteOp,
-    );
+    try {
+      SandboxFS.validateAccess(
+        context.writeScope,
+        catalogEntry.metadata.isWriteOp,
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new InvokeToolError("TOOL_NOT_ALLOWED", error.message, {
+          tool_name: String(name),
+        });
+      }
+      throw new InvokeToolError("TOOL_NOT_ALLOWED", String(error), {
+        tool_name: String(name),
+      });
+    }
     const rawArgs = TOOL_ARGUMENT_RESOLVERS[name](args);
     const resolvedArgs = normalizeArgsForSandbox(
       name,
