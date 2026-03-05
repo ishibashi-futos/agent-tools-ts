@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from "bun:test";
-import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createSecureTool, type ToolContext } from "../../../../src/factory";
 import { GitStatusSummaryError } from "../../../../src/tools/git/git_status_summary/error";
 import { createGitStatusSummary } from "../../../../src/tools/git/git_status_summary/tool";
+
+type GitStatusSummaryUsecase = NonNullable<
+  Parameters<typeof createGitStatusSummary>[0]
+>["usecase"];
 
 const createTempDir = async (): Promise<string> => {
   return await mkdtemp(join(tmpdir(), "git-status-summary-tool-"));
@@ -37,7 +41,9 @@ describe("git_status_summary tool", () => {
 
       const secureTool = createSecureTool(
         { name: "git_status_summary", isWriteOp: false },
-        createGitStatusSummary({ usecase: mockUsecase as any }),
+        createGitStatusSummary({
+          usecase: mockUsecase as unknown as GitStatusSummaryUsecase,
+        }),
       );
       const context = createContext(workspaceRoot);
 
@@ -66,7 +72,7 @@ describe("git_status_summary tool", () => {
         createGitStatusSummary({
           usecase: vi.fn(async () => {
             throw new Error("usecase should not be called");
-          }) as any,
+          }) as unknown as GitStatusSummaryUsecase,
         }),
       );
       const context = createContext(workspaceRoot);
@@ -96,7 +102,7 @@ describe("git_status_summary tool", () => {
               "NOT_GIT_REPOSITORY",
               "not a git repository",
             );
-          }) as any,
+          }) as unknown as GitStatusSummaryUsecase,
         }),
       );
       const context = createContext(workspaceRoot);
@@ -128,7 +134,9 @@ describe("git_status_summary tool", () => {
 
       const secureTool = createSecureTool(
         { name: "git_status_summary", isWriteOp: false },
-        createGitStatusSummary({ usecase: mockUsecase as any }),
+        createGitStatusSummary({
+          usecase: mockUsecase as unknown as GitStatusSummaryUsecase,
+        }),
       );
       const context = createContext(workspaceRoot);
 
@@ -164,7 +172,9 @@ describe("git_status_summary tool", () => {
 
       const secureTool = createSecureTool(
         { name: "git_status_summary", isWriteOp: false },
-        createGitStatusSummary({ usecase: mockUsecase as any }),
+        createGitStatusSummary({
+          usecase: mockUsecase as unknown as GitStatusSummaryUsecase,
+        }),
       );
       const context = createContext(workspaceRoot);
 
@@ -189,7 +199,7 @@ describe("git_status_summary tool", () => {
       const tool = createGitStatusSummary({
         usecase: vi.fn(async () => {
           throw new Error("usecase should not be called");
-        }) as any,
+        }) as unknown as GitStatusSummaryUsecase,
       });
       const context = createContext(workspaceRoot);
 

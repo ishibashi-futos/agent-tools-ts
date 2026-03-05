@@ -1,4 +1,4 @@
-import { mkdir, lstat } from "node:fs/promises";
+import { lstat, mkdir } from "node:fs/promises";
 import { dirname, relative } from "node:path";
 import { WriteFileError } from "./error";
 import type { WriteFileInput, WriteFileOutput } from "./types";

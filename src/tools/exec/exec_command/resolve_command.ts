@@ -1,6 +1,6 @@
+import { constants } from "node:fs";
 import { access, stat } from "node:fs/promises";
 import { delimiter, isAbsolute, join, resolve } from "node:path";
-import { constants } from "node:fs";
 import { ExecCommandError } from "./error";
 import type { ExecCommandShellMode } from "./types";
 

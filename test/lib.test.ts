@@ -1,14 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it, vi } from "bun:test";
+import { resolve } from "node:path";
 import {
   createAgentToolkit,
   SecurityBypass,
-  type ToolContext,
   ToolCatalog,
+  type ToolContext,
 } from "../src/lib";
-import { resolve } from "node:path";
 
 describe("Library Integration (Toolkit & Guardrails)", () => {
   const workspaceRoot = resolve("./test-workspace");
+  const mutableToolCatalog = ToolCatalog as {
+    [K in keyof typeof ToolCatalog]: {
+      metadata: (typeof ToolCatalog)[K]["metadata"];
+      handler: (typeof ToolCatalog)[K]["handler"];
+    };
+  };
 
   // 各テスト前にハンドラーのモックをリセット
   beforeEach(() => {
@@ -18,7 +24,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
   it("正常系: 適切なコンテキストでパッチ適用が成功すること", async () => {
     const mockHandler = vi.fn().mockResolvedValue("Apply Success");
     // 型安全にハンドラーを差し替え
-    (ToolCatalog.apply_patch as any).handler = mockHandler;
+    mutableToolCatalog.apply_patch.handler = mockHandler;
 
     const context: ToolContext = {
       workspaceRoot,
@@ -109,7 +115,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
 
   it("高度なケース: SecurityBypassを使用すると拒否設定を無視できること", async () => {
     const mockHandler = vi.fn().mockResolvedValue("Bypassed Success");
-    (ToolCatalog.apply_patch as any).handler = mockHandler;
+    mutableToolCatalog.apply_patch.handler = mockHandler;
 
     const context: ToolContext = {
       workspaceRoot,
@@ -143,7 +149,10 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const toolkit = createAgentToolkit(context);
 
     // 型安全性を無視して null を渡す
-    const result = await toolkit.tools.apply_patch(null as any, "data");
+    const result = await toolkit.tools.apply_patch(
+      null as unknown as string,
+      "data",
+    );
 
     expect(result.status).toBe("failure");
     if (result.status !== "failure")
@@ -170,7 +179,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
         mtime_ms: 1,
       },
     });
-    (ToolCatalog.read_file as any).handler = mockHandler;
+    mutableToolCatalog.read_file.handler = mockHandler;
 
     const context: ToolContext = {
       workspaceRoot,
@@ -200,7 +209,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       branch: "main",
       raw: "## main\n",
     });
-    (ToolCatalog.git_status_summary as any).handler = mockHandler;
+    mutableToolCatalog.git_status_summary.handler = mockHandler;
 
     const context: ToolContext = {
       workspaceRoot,
@@ -227,7 +236,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
       created: true,
       bytes_written: 12,
     });
-    (ToolCatalog.write_file as any).handler = mockHandler;
+    mutableToolCatalog.write_file.handler = mockHandler;
 
     const context: ToolContext = {
       workspaceRoot,
@@ -265,7 +274,7 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
         mtime_ms: 1,
       },
     });
-    (ToolCatalog.read_file as any).handler = mockHandler;
+    mutableToolCatalog.read_file.handler = mockHandler;
 
     const context: ToolContext = {
       workspaceRoot,

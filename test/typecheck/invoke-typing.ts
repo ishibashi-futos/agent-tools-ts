@@ -1,5 +1,5 @@
-import { createAgentToolkit, type ToolContext } from "../../src/lib";
 import { resolve } from "node:path";
+import { createAgentToolkit, type ToolContext } from "../../src/lib";
 
 const context: ToolContext = {
   workspaceRoot: resolve("./test-workspace"),

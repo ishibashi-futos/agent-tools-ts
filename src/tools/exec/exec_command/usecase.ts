@@ -1,7 +1,7 @@
 import {
-  spawn,
   type SpawnOptions,
   type SpawnResult,
+  spawn,
 } from "../../../utils/exec";
 import { resolveExecutionCommand } from "./resolve_command";
 import type { ExecCommandOutput, ExecCommandValidatedInput } from "./types";

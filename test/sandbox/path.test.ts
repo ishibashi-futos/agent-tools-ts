@@ -1,6 +1,6 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import { resolve } from "node:path";
 import { SandboxPath } from "../../src/sandbox/path";
-import { resolve, sep } from "node:path";
 
 describe("SandboxPath", () => {
   const root = resolve("/workspace/project");

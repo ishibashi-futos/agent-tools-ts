@@ -1,8 +1,8 @@
-import { SecurityPolicy, type SecurityPolicyConfig } from "./security/policy";
-import { SandboxPath } from "./sandbox/path";
-import { SandboxFS, type FileAccessMode } from "./sandbox/fs";
 import * as os from "node:os";
 import type { ToolErrorEnvelope } from "./errors/envelope";
+import { type FileAccessMode, SandboxFS } from "./sandbox/fs";
+import { SandboxPath } from "./sandbox/path";
+import { SecurityPolicy, type SecurityPolicyConfig } from "./security/policy";
 
 /**
  * ツールの実行コンテキスト定義
@@ -41,7 +41,7 @@ export interface ToolError {
   error: ToolErrorEnvelope;
 }
 
-export type ToolResult<R = any> = ToolSuccess<R> | ToolError;
+export type ToolResult<R = unknown> = ToolSuccess<R> | ToolError;
 
 /**
  * コンテキスト生成用パラメータ
@@ -74,7 +74,7 @@ export function createToolContext<TToolName extends string = string>(
 /**
  * 高階関数により、生のドメイン関数にガードレールを適用する
  */
-export function createSecureTool<T extends any[], R>(
+export function createSecureTool<T extends unknown[], R>(
   metadata: ToolMetadata,
   fn: (context: ToolContext, ...args: T) => Promise<R> | R,
 ) {
@@ -130,10 +130,10 @@ export function createSecureTool<T extends any[], R>(
 
         if (typeof args[0] === "string") {
           const normalizedPathArg = args[0].replace(/\\/g, "/");
-          args[0] = SandboxPath.resolveInWorkspace(
+          (args as unknown[])[0] = SandboxPath.resolveInWorkspace(
             normalizedPathArg,
             context.workspaceRoot,
-          ) as any;
+          );
         } else if (
           typeof args[0] === "object" &&
           args[0] !== null &&
@@ -142,24 +142,23 @@ export function createSecureTool<T extends any[], R>(
         ) {
           const input = args[0] as Record<string, unknown>;
           const normalizedCwd = (input.cwd as string).replace(/\\/g, "/");
-          args[0] = {
+          (args as unknown[])[0] = {
             ...input,
             cwd: SandboxPath.resolveInWorkspace(
               normalizedCwd,
               context.workspaceRoot,
             ),
-          } as any;
+          };
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        const deniedReason = message.includes("Policy") ? "policy" : "sandbox";
         // 拒否時は ToolError 型を返す
         return {
           status: "denied",
-          reason: e.message.includes("Policy") ? "policy" : "sandbox",
-          message: e.message,
-          error: toErrorEnvelope(
-            e.message.includes("Policy") ? "policy" : "sandbox",
-            e.message,
-          ),
+          reason: deniedReason,
+          message,
+          error: toErrorEnvelope(deniedReason, message),
         };
       }
 
@@ -168,7 +167,7 @@ export function createSecureTool<T extends any[], R>(
 
       // 成功時は ToolSuccess 型を返す
       return { status: "success", data: result };
-    } catch (e: any) {
+    } catch (e: unknown) {
       // 実行時エラーは failure
       return {
         status: "failure",

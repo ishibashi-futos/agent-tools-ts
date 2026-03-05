@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import { stat } from "node:fs/promises";
 import type { ToolContext } from "../../../factory";
 import { SandboxPath } from "../../../sandbox/path";
@@ -66,7 +67,7 @@ export const createGitStatusSummary = (
       const validated = validateGitStatusSummaryInput(cwd);
       const targetCwd = resolveTargetCwd(context, validated);
 
-      let cwdStat;
+      let cwdStat: Stats;
       try {
         cwdStat = await stat(targetCwd);
       } catch {

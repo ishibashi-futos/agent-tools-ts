@@ -1,34 +1,25 @@
 import {
-  createSecureTool,
-  createToolContext as createBaseToolContext,
   type ToolContext as BaseToolContext,
-  type ToolMetadata,
+  createToolContext as createBaseToolContext,
+  createSecureTool,
 } from "./factory";
+import {
+  type AllowedToolName,
+  TOOL_DEFINITIONS,
+} from "./registory/definitions";
+import { selectAllowedTools } from "./registory/select";
+import type { FileAccessMode } from "./sandbox/fs";
+import { SecurityBypass } from "./security/bypass";
+import type { SecurityPolicyConfig } from "./security/policy";
+import { createInvoke } from "./toolkit/invoke/index";
 import { applyPatch } from "./tools/edit/apply_patch/tool";
 import { readFile } from "./tools/edit/read_file/tool";
 import { tree } from "./tools/edit/tree/tool";
 import { writeFile } from "./tools/edit/write_file/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
-import { SecurityBypass } from "./security/bypass";
-import {
-  TOOL_DEFINITIONS,
-  type AllowedToolName,
-} from "./registory/definitions";
-import { createInvoke } from "./toolkit/invoke/index";
-import { selectAllowedTools } from "./registory/select";
-import type { SecurityPolicyConfig } from "./security/policy";
-import type { FileAccessMode } from "./sandbox/fs";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
-
-/**
- * ツール定義と実装のペア
- */
-interface ToolDefinition<T extends any[], R> {
-  metadata: ToolMetadata & { description: string };
-  handler: (context: ToolContext, ...args: T) => Promise<R> | R;
-}
 
 type ToolName = AllowedToolName;
 export type ToolContext = BaseToolContext<ToolName>;
@@ -149,17 +140,17 @@ export function createAgentToolkit(context: ToolContext) {
  */
 export { SecurityBypass };
 
+export type { ToolErrorEnvelope } from "./errors/envelope";
+export type { AllowedToolName } from "./registory/definitions";
 /**
  * 型定義の再エクスポート
  */
 export type { FileAccessMode } from "./sandbox/fs";
-export type { SecurityPolicyConfig, AccessLevel } from "./security/policy";
-export type { AllowedToolName } from "./registory/definitions";
+export type { AccessLevel, SecurityPolicyConfig } from "./security/policy";
 export type { InvokeToolErrorCode } from "./toolkit/invoke/error";
-export type { ToolErrorEnvelope } from "./errors/envelope";
 export type {
-  ToolArgsByName,
-  ToolResultByName,
-  ToolkitInvokeOutput,
   Invoke,
+  ToolArgsByName,
+  ToolkitInvokeOutput,
+  ToolResultByName,
 } from "./toolkit/invoke/index";

@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { createTreeFilter } from "./filter";
@@ -7,7 +8,6 @@ import type {
   TreeOutput,
   TreeValidatedInput,
 } from "./types";
-import type { Dirent } from "node:fs";
 
 type TreeState = {
   scannedEntries: number;

@@ -1,11 +1,21 @@
 import { describe, expect, it, vi } from "bun:test";
 import { resolve } from "node:path";
-import { createInvoke } from "../../src/toolkit/invoke/index";
+import {
+  type AllowedToolName,
+  ToolCatalog,
+  type ToolContext,
+} from "../../src/lib";
 import { InvokeToolError } from "../../src/toolkit/invoke/error";
-import { ToolCatalog, type ToolContext } from "../../src/lib";
+import { createInvoke } from "../../src/toolkit/invoke/index";
 
 describe("createInvoke", () => {
   const workspaceRoot = resolve("./test-workspace");
+  const mutableToolCatalog = ToolCatalog as {
+    [K in keyof typeof ToolCatalog]: {
+      metadata: (typeof ToolCatalog)[K]["metadata"];
+      handler: (typeof ToolCatalog)[K]["handler"];
+    };
+  };
 
   it("未登録ツール名は TOOL_NOT_FOUND を返すこと", async () => {
     const context: ToolContext = {
@@ -16,7 +26,9 @@ describe("createInvoke", () => {
     };
     const invoke = createInvoke({ context, catalog: ToolCatalog });
 
-    await expect(invoke("unknown_tool" as any, {})).rejects.toMatchObject({
+    await expect(
+      invoke("unknown_tool" as unknown as AllowedToolName, {}),
+    ).rejects.toMatchObject({
       code: "TOOL_NOT_FOUND",
       tool_name: "unknown_tool",
     });
@@ -69,7 +81,7 @@ describe("createInvoke", () => {
     const invoke = createInvoke({ context, catalog: ToolCatalog });
 
     try {
-      await invoke("read_file", 123 as any);
+      await invoke("read_file", 123 as unknown as { path: string });
       throw new Error("Expected invoke to throw");
     } catch (error) {
       expect(error).toBeInstanceOf(InvokeToolError);
@@ -100,7 +112,7 @@ describe("createInvoke", () => {
       changed: false,
       stderr: "",
     });
-    (ToolCatalog.apply_patch as any).handler = mockHandler;
+    mutableToolCatalog.apply_patch.handler = mockHandler;
 
     try {
       const invoke = createInvoke({ context, catalog: ToolCatalog });
@@ -115,7 +127,7 @@ describe("createInvoke", () => {
         "@@ -1 +1 @@\n-old\n+new\n",
       );
     } finally {
-      (ToolCatalog.apply_patch as any).handler = originalHandler;
+      mutableToolCatalog.apply_patch.handler = originalHandler;
     }
   });
 
@@ -139,7 +151,7 @@ describe("createInvoke", () => {
       timed_out: false,
       duration_ms: 1,
     });
-    (ToolCatalog.exec_command as any).handler = mockHandler;
+    mutableToolCatalog.exec_command.handler = mockHandler;
 
     try {
       const invoke = createInvoke({ context, catalog: ToolCatalog });
@@ -155,7 +167,7 @@ describe("createInvoke", () => {
         shell_mode: "direct",
       });
     } finally {
-      (ToolCatalog.exec_command as any).handler = originalHandler;
+      mutableToolCatalog.exec_command.handler = originalHandler;
     }
   });
 });

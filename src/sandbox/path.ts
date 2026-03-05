@@ -1,4 +1,4 @@
-import { resolve, relative, isAbsolute, normalize } from "node:path";
+import { isAbsolute, relative, resolve } from "node:path";
 
 export const SandboxPath = {
   /**

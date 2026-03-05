@@ -1,5 +1,5 @@
 import { relative } from "node:path";
-import { guardReadableTextFile, type GuardedFileMeta } from "./file_guard";
+import { type GuardedFileMeta, guardReadableTextFile } from "./file_guard";
 import type { ReadFileOutput, ReadFileValidatedInput } from "./types";
 
 type ReadFileUsecaseDependencies = {

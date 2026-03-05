@@ -1,8 +1,8 @@
+import type { ToolContext } from "../../factory";
+import type { AllowedToolName } from "../../registory/definitions";
 import { SandboxFS } from "../../sandbox/fs";
 import { SandboxPath } from "../../sandbox/path";
 import { SecurityPolicy } from "../../security/policy";
-import type { ToolContext } from "../../factory";
-import type { AllowedToolName } from "../../registory/definitions";
 import type {
   ApplyPatchInput,
   ApplyPatchOutput,
@@ -44,6 +44,30 @@ export interface ToolResultByName extends Record<AllowedToolName, unknown> {
   git_status_summary: GitStatusSummaryOutput;
 }
 
+type ToolInvocationArgsByName = {
+  apply_patch: [filePath: string, patch: string];
+  write_file: [path: string, content: string];
+  exec_command: [input: ExecCommandInput];
+  tree: [
+    path: string,
+    options: {
+      entry_kind?: TreeInput["entry_kind"];
+      max_depth?: TreeInput["max_depth"];
+      max_entries?: TreeInput["max_entries"];
+      include_hidden?: TreeInput["include_hidden"];
+      exclude?: TreeInput["exclude"];
+    },
+  ];
+  read_file: [
+    path: string,
+    options: {
+      start_line?: ReadFileInput["start_line"];
+      max_lines?: ReadFileInput["max_lines"];
+    },
+  ];
+  git_status_summary: [cwd: string | undefined];
+};
+
 export type ToolkitInvokeOutput<TName extends AllowedToolName> = {
   role: "function";
   name: TName;
@@ -62,14 +86,16 @@ type CatalogEntry<TName extends AllowedToolName> = {
   };
   handler: (
     context: ToolContext<AllowedToolName>,
-    ...args: any[]
+    ...args: ToolInvocationArgsByName[TName]
   ) => Promise<ToolResultByName[TName]> | ToolResultByName[TName];
 };
 
 type InvokeCatalog = { [TName in AllowedToolName]: CatalogEntry<TName> };
 
 type ToolArgumentResolver = {
-  [TName in AllowedToolName]: (args: ToolArgsByName[TName]) => unknown[];
+  [TName in AllowedToolName]: (
+    args: ToolArgsByName[TName],
+  ) => ToolInvocationArgsByName[TName];
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -100,11 +126,11 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
   git_status_summary: (args) => [args.cwd],
 };
 
-const normalizeArgsForSandbox = (
-  toolName: AllowedToolName,
-  args: unknown[],
+const normalizeArgsForSandbox = <TName extends AllowedToolName>(
+  toolName: TName,
+  args: ToolInvocationArgsByName[TName],
   workspaceRoot: string,
-): unknown[] => {
+): ToolInvocationArgsByName[TName] => {
   if (
     toolName === "exec_command" &&
     typeof args[0] === "object" &&
@@ -118,7 +144,7 @@ const normalizeArgsForSandbox = (
         normalizedCwd,
         workspaceRoot,
       );
-      return [{ ...input, cwd: resolved }, ...args.slice(1)];
+      return [{ ...input, cwd: resolved }] as ToolInvocationArgsByName[TName];
     }
     return args;
   }
@@ -132,9 +158,28 @@ const normalizeArgsForSandbox = (
     normalizedPathArg,
     workspaceRoot,
   );
-  const copied = [...args];
-  copied[0] = resolved;
-  return copied;
+  if (toolName === "apply_patch") {
+    return [resolved, args[1] as string] as ToolInvocationArgsByName[TName];
+  }
+  if (toolName === "write_file") {
+    return [resolved, args[1] as string] as ToolInvocationArgsByName[TName];
+  }
+  if (toolName === "tree") {
+    return [
+      resolved,
+      args[1] as ToolInvocationArgsByName["tree"][1],
+    ] as ToolInvocationArgsByName[TName];
+  }
+  if (toolName === "read_file") {
+    return [
+      resolved,
+      args[1] as ToolInvocationArgsByName["read_file"][1],
+    ] as ToolInvocationArgsByName[TName];
+  }
+  if (toolName === "git_status_summary") {
+    return [resolved] as ToolInvocationArgsByName[TName];
+  }
+  return args;
 };
 
 type InvokeParams = {

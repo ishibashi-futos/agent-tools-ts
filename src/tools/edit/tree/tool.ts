@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import { lstat } from "node:fs/promises";
 import type { ToolContext } from "../../../factory";
 import type { TreeOptions, TreeOutput, TreeValidatedInput } from "./types";
@@ -150,7 +151,7 @@ export const createTree = (
     try {
       const input = validateTreeInput(path, options);
 
-      let rootStat;
+      let rootStat: Stats;
       try {
         rootStat = await lstat(input.path);
       } catch (error) {

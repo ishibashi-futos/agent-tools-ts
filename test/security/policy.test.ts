@@ -1,5 +1,5 @@
 // test/security/policy.test.ts
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
   SecurityPolicy,
   type SecurityPolicyConfig,

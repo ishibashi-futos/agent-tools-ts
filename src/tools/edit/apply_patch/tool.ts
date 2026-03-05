@@ -1,8 +1,8 @@
 import type { ToolContext } from "../../../factory";
 import {
-  spawn,
   type SpawnOptions,
   type SpawnResult,
+  spawn,
 } from "../../../utils/exec";
 import { toSha256Hex } from "../../../utils/hash";
 import { toInternalError } from "./error";

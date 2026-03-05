@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import { stat } from "node:fs/promises";
 import type { ToolContext } from "../../../factory";
 import { ExecCommandError, toInternalError } from "./error";
@@ -26,7 +27,7 @@ export const createExecCommand = (
     try {
       const validated = validateExecCommandInput(input);
 
-      let cwdStat;
+      let cwdStat: Stats;
       try {
         cwdStat = await stat(validated.cwd);
       } catch {

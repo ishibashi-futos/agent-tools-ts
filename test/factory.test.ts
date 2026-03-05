@@ -1,6 +1,6 @@
-import { describe, it, expect } from "bun:test";
-import { createSecureTool, type ToolContext } from "../src/factory";
+import { describe, expect, it } from "bun:test";
 import { resolve } from "node:path";
+import { createSecureTool, type ToolContext } from "../src/factory";
 
 describe("factory.ts (createSecureTool)", () => {
   const workspaceRoot = resolve("/test/workspace");
@@ -11,13 +11,13 @@ describe("factory.ts (createSecureTool)", () => {
     env: { platform: "darwin", osRelease: "20.0.0" },
   };
   const mockDomainFn = async (
-    context: ToolContext,
+    _context: ToolContext,
     path: string,
-    data: string,
+    _data: string,
   ) => `Processed ${path}`;
 
   it("Security Layer: ポリシー拒否時に status: 'denied' を返すこと", async () => {
-    const deniedContext = {
+    const deniedContext: ToolContext = {
       ...defaultContext,
       policy: { tools: { test_tool: "deny" }, defaultPolicy: "deny" },
     };
@@ -26,11 +26,7 @@ describe("factory.ts (createSecureTool)", () => {
       mockDomainFn,
     );
 
-    const result = await secureTool(
-      deniedContext as any,
-      "src/index.ts",
-      "data",
-    );
+    const result = await secureTool(deniedContext, "src/index.ts", "data");
 
     expect(result.status).toBe("denied");
     if (result.status !== "denied")
@@ -45,17 +41,16 @@ describe("factory.ts (createSecureTool)", () => {
   });
 
   it("Sandbox FS Layer: Read-onlyモードでの書き込み時に status: 'denied' を返すこと", async () => {
-    const readOnlyContext = { ...defaultContext, writeScope: "read-only" };
+    const readOnlyContext: ToolContext = {
+      ...defaultContext,
+      writeScope: "read-only",
+    };
     const secureTool = createSecureTool(
       { name: "test_tool", isWriteOp: true },
       mockDomainFn,
     );
 
-    const result = await secureTool(
-      readOnlyContext as any,
-      "src/index.ts",
-      "data",
-    );
+    const result = await secureTool(readOnlyContext, "src/index.ts", "data");
 
     expect(result.status).toBe("denied");
     if (result.status !== "denied")

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createSecureTool, type ToolContext } from "../../../../src/factory";
 import { execCommand } from "../../../../src/tools/exec/exec_command/tool";
 

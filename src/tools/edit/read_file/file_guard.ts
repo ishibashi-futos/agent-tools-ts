@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import { lstat, open } from "node:fs/promises";
 import { ReadFileError } from "./error";
 
@@ -30,7 +31,7 @@ const ensureNotBinary = async (path: string): Promise<void> => {
 export const guardReadableTextFile = async (
   path: string,
 ): Promise<GuardedFileMeta> => {
-  let fileStat;
+  let fileStat: Stats;
   try {
     fileStat = await lstat(path);
   } catch (error) {
