@@ -8,6 +8,7 @@ const context: ToolContext = {
     tools: {
       read_file: "allow",
       exec_command: "allow",
+      task_create_many: "allow",
     },
     defaultPolicy: "deny",
   },
@@ -18,9 +19,13 @@ const toolkit = createAgentToolkit(context);
 
 void toolkit.invoke("read_file", { path: "src/lib.ts" });
 void toolkit.invoke("exec_command", { cwd: ".", command: ["pwd"] });
+void toolkit.invoke("task_create_many", { tasks: [{ title: "task" }] });
 
 // @ts-expect-error read_file の引数は path が必要
 void toolkit.invoke("read_file", { cwd: "." });
 
 // @ts-expect-error exec_command の引数は command が必要
 void toolkit.invoke("exec_command", { cwd: "." });
+
+// @ts-expect-error task_create_many の引数は tasks が必要
+void toolkit.invoke("task_create_many", {});
