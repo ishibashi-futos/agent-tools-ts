@@ -6,7 +6,7 @@ P0: 最も高い ~ P4: 最も低い
 
 ## `search` 検索
 
-- [ ] regexp_search: 正規表現を使ってコードベース全体から特定のパターンを探す
+- [x] [P1] regexp_search: 正規表現を使ってコードベース全体から特定のパターンを探す
 - [ ] codebase_search: セマンティック検索を使用して、関連するファイル・チャンク・シンボルなどを検索する
 - [ ] find_function_definition: 関数定義を取得する
 - [ ] search_with_context: ヒットした行の前後のコンテキストを取得する
