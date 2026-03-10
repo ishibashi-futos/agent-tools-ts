@@ -3,6 +3,7 @@ import type { ToolErrorEnvelope } from "./errors/envelope";
 import { type FileAccessMode, SandboxFS } from "./sandbox/fs";
 import { SandboxPath } from "./sandbox/path";
 import { SecurityPolicy, type SecurityPolicyConfig } from "./security/policy";
+import type { TodoSessionState } from "./tools/todo/types";
 
 /**
  * ツールの実行コンテキスト定義
@@ -11,6 +12,7 @@ export interface ToolContext<TToolName extends string = string> {
   workspaceRoot: string;
   writeScope: FileAccessMode;
   policy: SecurityPolicyConfig<TToolName>;
+  todo?: TodoSessionState;
   env: {
     platform: NodeJS.Platform;
     osRelease: string;

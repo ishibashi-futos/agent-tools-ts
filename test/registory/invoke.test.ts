@@ -171,6 +171,42 @@ describe("createInvoke", () => {
     }
   });
 
+  it("task_create_many は単一オブジェクト引数をハンドラーに渡すこと", async () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { task_create_many: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const originalHandler = ToolCatalog.task_create_many.handler;
+    const mockHandler = vi.fn().mockResolvedValue({
+      tasks: [
+        {
+          task_id: "00000000-0000-4000-8000-000000000000",
+          status: "todo",
+          title: "t1",
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    mutableToolCatalog.task_create_many.handler = mockHandler;
+
+    try {
+      const invoke = createInvoke({ context, catalog: ToolCatalog });
+      await invoke("task_create_many", {
+        tasks: [{ title: "t1" }],
+      });
+
+      expect(mockHandler).toHaveBeenCalledWith(context, {
+        tasks: [{ title: "t1" }],
+      });
+    } finally {
+      mutableToolCatalog.task_create_many.handler = originalHandler;
+    }
+  });
+
   it("regexp_search は root_path を正規化した単一オブジェクト引数をハンドラーに渡すこと", async () => {
     const context: ToolContext = {
       workspaceRoot,

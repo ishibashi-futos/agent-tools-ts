@@ -175,6 +175,102 @@ export const TOOL_DEFINITIONS = {
       },
     },
   },
+  task_create_many: {
+    type: "function",
+    function: {
+      name: "task_create_many",
+      description:
+        "Creates initial task list for the current execution session.",
+      parameters: {
+        type: "object",
+        properties: {
+          tasks: {
+            type: "array",
+            description: "Initial tasks (max: 100).",
+            items: {
+              type: "object",
+              properties: {
+                title: {
+                  type: "string",
+                  description: "Task title.",
+                },
+                description: {
+                  type: "string",
+                  description: "Optional detail.",
+                },
+              },
+              required: ["title"],
+            },
+          },
+        },
+        required: ["tasks"],
+      },
+    },
+  },
+  task_list: {
+    type: "function",
+    function: {
+      name: "task_list",
+      description: "Returns all tasks in creation order for this session.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
+    },
+  },
+  task_update: {
+    type: "function",
+    function: {
+      name: "task_update",
+      description: "Updates title or description of an existing session task.",
+      parameters: {
+        type: "object",
+        properties: {
+          task_id: { type: "string", description: "Target task id." },
+          title: { type: "string", description: "New task title." },
+          description: {
+            type: "string",
+            description:
+              "Optional detail. Escape Windows backslashes in JSON, e.g. C:\\\\repo\\\\src.",
+          },
+        },
+        required: ["task_id", "title"],
+      },
+    },
+  },
+  task_update_status: {
+    type: "function",
+    function: {
+      name: "task_update_status",
+      description: "Updates status of an existing session task.",
+      parameters: {
+        type: "object",
+        properties: {
+          task_id: { type: "string", description: "Target task id." },
+          status: {
+            type: "string",
+            enum: ["todo", "done", "canceled"],
+            description: "New task status.",
+          },
+        },
+        required: ["task_id", "status"],
+      },
+    },
+  },
+  task_validate_completion: {
+    type: "function",
+    function: {
+      name: "task_validate_completion",
+      description:
+        "Validates whether unfinished todo tasks remain in this session.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
+    },
+  },
   regexp_search: {
     type: "function",
     function: {

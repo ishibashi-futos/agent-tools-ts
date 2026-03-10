@@ -20,6 +20,13 @@ import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
 import { astGrepSearch } from "./tools/search/ast_grep_search/tool";
 import { regexpSearch } from "./tools/search/regexp_search/tool";
+import {
+  taskCreateMany,
+  taskList,
+  taskUpdate,
+  taskUpdateStatus,
+  taskValidateCompletion,
+} from "./tools/todo/tool";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
 
@@ -109,6 +116,48 @@ export const ToolCatalog = {
     },
     handler: gitStatusSummary,
   },
+  task_create_many: {
+    metadata: {
+      name: "task_create_many",
+      isWriteOp: false,
+      description:
+        "Creates initial task list for the current execution session.",
+    },
+    handler: taskCreateMany,
+  },
+  task_list: {
+    metadata: {
+      name: "task_list",
+      isWriteOp: false,
+      description: "Returns all tasks in creation order for this session.",
+    },
+    handler: taskList,
+  },
+  task_update: {
+    metadata: {
+      name: "task_update",
+      isWriteOp: false,
+      description: "Updates title or description of an existing session task.",
+    },
+    handler: taskUpdate,
+  },
+  task_update_status: {
+    metadata: {
+      name: "task_update_status",
+      isWriteOp: false,
+      description: "Updates status of an existing session task.",
+    },
+    handler: taskUpdateStatus,
+  },
+  task_validate_completion: {
+    metadata: {
+      name: "task_validate_completion",
+      isWriteOp: false,
+      description:
+        "Validates whether unfinished todo tasks remain in this session.",
+    },
+    handler: taskValidateCompletion,
+  },
 } as const;
 
 export function createToolContext(
@@ -153,6 +202,26 @@ export function createAgentToolkit(context: ToolContext) {
     git_status_summary: createSecureTool(
       ToolCatalog.git_status_summary.metadata,
       ToolCatalog.git_status_summary.handler,
+    ).bind(null, context),
+    task_create_many: createSecureTool(
+      ToolCatalog.task_create_many.metadata,
+      ToolCatalog.task_create_many.handler,
+    ).bind(null, context),
+    task_list: createSecureTool(
+      ToolCatalog.task_list.metadata,
+      ToolCatalog.task_list.handler,
+    ).bind(null, context),
+    task_update: createSecureTool(
+      ToolCatalog.task_update.metadata,
+      ToolCatalog.task_update.handler,
+    ).bind(null, context),
+    task_update_status: createSecureTool(
+      ToolCatalog.task_update_status.metadata,
+      ToolCatalog.task_update_status.handler,
+    ).bind(null, context),
+    task_validate_completion: createSecureTool(
+      ToolCatalog.task_validate_completion.metadata,
+      ToolCatalog.task_validate_completion.handler,
     ).bind(null, context),
   };
 

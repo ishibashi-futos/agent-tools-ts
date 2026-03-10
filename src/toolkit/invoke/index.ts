@@ -32,6 +32,18 @@ import type {
   RegexpSearchInput,
   RegexpSearchOutput,
 } from "../../tools/search/regexp_search/types";
+import type {
+  TaskCreateManyInput,
+  TaskCreateManyOutput,
+  TaskListInput,
+  TaskListOutput,
+  TaskUpdateInput,
+  TaskUpdateOutput,
+  TaskUpdateStatusInput,
+  TaskUpdateStatusOutput,
+  TaskValidateCompletionInput,
+  TaskValidateCompletionOutput,
+} from "../../tools/todo/types";
 import { InvokeToolError } from "./error";
 
 export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
@@ -43,6 +55,11 @@ export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
   regexp_search: RegexpSearchInput;
   ast_grep_search: AstGrepSearchInput;
   git_status_summary: GitStatusSummaryInput;
+  task_create_many: TaskCreateManyInput;
+  task_list: TaskListInput;
+  task_update: TaskUpdateInput;
+  task_update_status: TaskUpdateStatusInput;
+  task_validate_completion: TaskValidateCompletionInput;
 }
 
 export interface ToolResultByName extends Record<AllowedToolName, unknown> {
@@ -54,6 +71,11 @@ export interface ToolResultByName extends Record<AllowedToolName, unknown> {
   regexp_search: RegexpSearchOutput;
   ast_grep_search: AstGrepSearchOutput;
   git_status_summary: GitStatusSummaryOutput;
+  task_create_many: TaskCreateManyOutput;
+  task_list: TaskListOutput;
+  task_update: TaskUpdateOutput;
+  task_update_status: TaskUpdateStatusOutput;
+  task_validate_completion: TaskValidateCompletionOutput;
 }
 
 type ToolInvocationArgsByName = {
@@ -80,6 +102,11 @@ type ToolInvocationArgsByName = {
   regexp_search: [input: RegexpSearchInput];
   ast_grep_search: [input: AstGrepSearchInput];
   git_status_summary: [cwd: string | undefined];
+  task_create_many: [input: TaskCreateManyInput];
+  task_list: [input: TaskListInput];
+  task_update: [input: TaskUpdateInput];
+  task_update_status: [input: TaskUpdateStatusInput];
+  task_validate_completion: [input: TaskValidateCompletionInput];
 };
 
 export type ToolkitInvokeOutput<TName extends AllowedToolName> = {
@@ -140,6 +167,11 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
   regexp_search: (args) => [args],
   ast_grep_search: (args) => [args],
   git_status_summary: (args) => [args.cwd],
+  task_create_many: (args) => [args],
+  task_list: (args) => [args],
+  task_update: (args) => [args],
+  task_update_status: (args) => [args],
+  task_validate_completion: (args) => [args],
 };
 
 const normalizeArgsForSandbox = <TName extends AllowedToolName>(
