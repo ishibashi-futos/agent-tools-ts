@@ -209,4 +209,44 @@ describe("createInvoke", () => {
       mutableToolCatalog.regexp_search.handler = originalHandler;
     }
   });
+
+  it("ast_grep_search は root_path を正規化した単一オブジェクト引数をハンドラーに渡すこと", async () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { ast_grep_search: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const originalHandler = ToolCatalog.ast_grep_search.handler;
+    const mockHandler = vi.fn().mockResolvedValue({
+      query: {
+        language: "typescript",
+        rule: { pattern: "const $A = $B" },
+      },
+      root_path: "src",
+      took_ms: 1,
+      truncated: false,
+      items: [],
+      warnings: [],
+    });
+    mutableToolCatalog.ast_grep_search.handler = mockHandler;
+
+    try {
+      const invoke = createInvoke({ context, catalog: ToolCatalog });
+      await invoke("ast_grep_search", {
+        language: "typescript",
+        rule: { pattern: "const $A = $B" },
+        root_path: "src\\nested\\..",
+      });
+
+      expect(mockHandler).toHaveBeenCalledWith(context, {
+        language: "typescript",
+        rule: { pattern: "const $A = $B" },
+        root_path: resolve(workspaceRoot, "src"),
+      });
+    } finally {
+      mutableToolCatalog.ast_grep_search.handler = originalHandler;
+    }
+  });
 });
