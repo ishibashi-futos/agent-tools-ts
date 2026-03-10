@@ -230,6 +230,79 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     expect(result.data.branch).toBe("main");
   });
 
+  it("正常系: regexp_search が ToolCatalog と toolkit に登録され実行できること", async () => {
+    const mockHandler = vi.fn().mockResolvedValue({
+      query: {
+        pattern: "TODO",
+        flags: "",
+      },
+      root_path: ".",
+      took_ms: 1,
+      truncated: false,
+      scanned_files: 0,
+      items: [],
+      warnings: [],
+    });
+    mutableToolCatalog.regexp_search.handler = mockHandler;
+
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { regexp_search: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const result = await toolkit.tools.regexp_search({ pattern: "TODO" });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") {
+      throw new Error("Expected success but got non-success");
+    }
+
+    expect(mockHandler).toHaveBeenCalledWith(context, { pattern: "TODO" });
+    expect(result.data.root_path).toBe(".");
+  });
+
+  it("正常系: ast_grep_search が ToolCatalog と toolkit に登録され実行できること", async () => {
+    const mockHandler = vi.fn().mockResolvedValue({
+      query: {
+        language: "typescript",
+        rule: { pattern: "const $A = $B" },
+      },
+      root_path: ".",
+      took_ms: 1,
+      truncated: false,
+      items: [],
+      warnings: [],
+    });
+    mutableToolCatalog.ast_grep_search.handler = mockHandler;
+
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { ast_grep_search: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const toolkit = createAgentToolkit(context);
+    const result = await toolkit.tools.ast_grep_search({
+      language: "typescript",
+      rule: { pattern: "const $A = $B" },
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") {
+      throw new Error("Expected success but got non-success");
+    }
+
+    expect(mockHandler).toHaveBeenCalledWith(context, {
+      language: "typescript",
+      rule: { pattern: "const $A = $B" },
+    });
+    expect(result.data.root_path).toBe(".");
+  });
+
   it("正常系: write_file が ToolCatalog と toolkit に登録され実行できること", async () => {
     const mockHandler = vi.fn().mockResolvedValue({
       path: "src/new.ts",
@@ -333,7 +406,9 @@ describe("Library Integration (Toolkit & Guardrails)", () => {
     const names = tools.map((tool) => tool.function.name);
 
     expect(names).not.toContain("exec_command");
+    expect(names).toContain("ast_grep_search");
     expect(names).toContain("apply_patch");
+    expect(names).toContain("regexp_search");
     expect(names).toContain("write_file");
     expect(names).toContain("tree");
   });

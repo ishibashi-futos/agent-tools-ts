@@ -25,6 +25,14 @@ import type {
   GitStatusSummaryOutput,
 } from "../../tools/git/git_status_summary/types";
 import type {
+  AstGrepSearchInput,
+  AstGrepSearchOutput,
+} from "../../tools/search/ast_grep_search/types";
+import type {
+  RegexpSearchInput,
+  RegexpSearchOutput,
+} from "../../tools/search/regexp_search/types";
+import type {
   TaskCreateManyInput,
   TaskCreateManyOutput,
   TaskListInput,
@@ -44,6 +52,8 @@ export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
   exec_command: ExecCommandInput;
   tree: TreeInput;
   read_file: ReadFileInput;
+  regexp_search: RegexpSearchInput;
+  ast_grep_search: AstGrepSearchInput;
   git_status_summary: GitStatusSummaryInput;
   task_create_many: TaskCreateManyInput;
   task_list: TaskListInput;
@@ -58,6 +68,8 @@ export interface ToolResultByName extends Record<AllowedToolName, unknown> {
   exec_command: ExecCommandOutput;
   tree: TreeOutput;
   read_file: ReadFileOutput;
+  regexp_search: RegexpSearchOutput;
+  ast_grep_search: AstGrepSearchOutput;
   git_status_summary: GitStatusSummaryOutput;
   task_create_many: TaskCreateManyOutput;
   task_list: TaskListOutput;
@@ -87,6 +99,8 @@ type ToolInvocationArgsByName = {
       max_lines?: ReadFileInput["max_lines"];
     },
   ];
+  regexp_search: [input: RegexpSearchInput];
+  ast_grep_search: [input: AstGrepSearchInput];
   git_status_summary: [cwd: string | undefined];
   task_create_many: [input: TaskCreateManyInput];
   task_list: [input: TaskListInput];
@@ -150,6 +164,8 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
       max_lines: args.max_lines,
     },
   ],
+  regexp_search: (args) => [args],
+  ast_grep_search: (args) => [args],
   git_status_summary: (args) => [args.cwd],
   task_create_many: (args) => [args],
   task_list: (args) => [args],
@@ -177,6 +193,26 @@ const normalizeArgsForSandbox = <TName extends AllowedToolName>(
         workspaceRoot,
       );
       return [{ ...input, cwd: resolved }] as ToolInvocationArgsByName[TName];
+    }
+    return args;
+  }
+
+  if (
+    (toolName === "regexp_search" || toolName === "ast_grep_search") &&
+    typeof args[0] === "object" &&
+    args[0] !== null &&
+    !Array.isArray(args[0])
+  ) {
+    const input = args[0] as Record<string, unknown>;
+    if (typeof input.root_path === "string") {
+      const normalizedRootPath = input.root_path.replace(/\\/g, "/");
+      const resolved = SandboxPath.resolveInWorkspace(
+        normalizedRootPath,
+        workspaceRoot,
+      );
+      return [
+        { ...input, root_path: resolved },
+      ] as ToolInvocationArgsByName[TName];
     }
     return args;
   }
