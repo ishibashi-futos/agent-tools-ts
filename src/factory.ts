@@ -117,8 +117,7 @@ export function createSecureTool<T extends unknown[], R>(
         !(
           typeof args[0] === "object" &&
           args[0] !== null &&
-          !Array.isArray(args[0]) &&
-          typeof (args[0] as Record<string, unknown>).cwd === "string"
+          !Array.isArray(args[0])
         )
       ) {
         throw new Error("Invalid path argument");
@@ -137,18 +136,28 @@ export function createSecureTool<T extends unknown[], R>(
         } else if (
           typeof args[0] === "object" &&
           args[0] !== null &&
-          !Array.isArray(args[0]) &&
-          typeof (args[0] as Record<string, unknown>).cwd === "string"
+          !Array.isArray(args[0])
         ) {
           const input = args[0] as Record<string, unknown>;
-          const normalizedCwd = (input.cwd as string).replace(/\\/g, "/");
-          (args as unknown[])[0] = {
-            ...input,
-            cwd: SandboxPath.resolveInWorkspace(
-              normalizedCwd,
-              context.workspaceRoot,
-            ),
-          };
+          if (typeof input.cwd === "string") {
+            const normalizedCwd = input.cwd.replace(/\\/g, "/");
+            (args as unknown[])[0] = {
+              ...input,
+              cwd: SandboxPath.resolveInWorkspace(
+                normalizedCwd,
+                context.workspaceRoot,
+              ),
+            };
+          } else if (typeof input.root_path === "string") {
+            const normalizedRootPath = input.root_path.replace(/\\/g, "/");
+            (args as unknown[])[0] = {
+              ...input,
+              root_path: SandboxPath.resolveInWorkspace(
+                normalizedRootPath,
+                context.workspaceRoot,
+              ),
+            };
+          }
         }
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : String(e);

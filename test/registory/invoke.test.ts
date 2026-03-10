@@ -170,4 +170,43 @@ describe("createInvoke", () => {
       mutableToolCatalog.exec_command.handler = originalHandler;
     }
   });
+
+  it("regexp_search は root_path を正規化した単一オブジェクト引数をハンドラーに渡すこと", async () => {
+    const context: ToolContext = {
+      workspaceRoot,
+      writeScope: "workspace-write",
+      policy: { tools: { regexp_search: "allow" }, defaultPolicy: "deny" },
+      env: { platform: "linux", osRelease: "5.4.0" },
+    };
+
+    const originalHandler = ToolCatalog.regexp_search.handler;
+    const mockHandler = vi.fn().mockResolvedValue({
+      query: {
+        pattern: "TODO",
+        flags: "",
+      },
+      root_path: "src",
+      took_ms: 1,
+      truncated: false,
+      scanned_files: 0,
+      items: [],
+      warnings: [],
+    });
+    mutableToolCatalog.regexp_search.handler = mockHandler;
+
+    try {
+      const invoke = createInvoke({ context, catalog: ToolCatalog });
+      await invoke("regexp_search", {
+        pattern: "TODO",
+        root_path: "src\\nested\\..",
+      });
+
+      expect(mockHandler).toHaveBeenCalledWith(context, {
+        pattern: "TODO",
+        root_path: resolve(workspaceRoot, "src"),
+      });
+    } finally {
+      mutableToolCatalog.regexp_search.handler = originalHandler;
+    }
+  });
 });

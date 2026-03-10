@@ -24,6 +24,10 @@ import type {
   GitStatusSummaryInput,
   GitStatusSummaryOutput,
 } from "../../tools/git/git_status_summary/types";
+import type {
+  RegexpSearchInput,
+  RegexpSearchOutput,
+} from "../../tools/search/regexp_search/types";
 import { InvokeToolError } from "./error";
 
 export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
@@ -32,6 +36,7 @@ export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
   exec_command: ExecCommandInput;
   tree: TreeInput;
   read_file: ReadFileInput;
+  regexp_search: RegexpSearchInput;
   git_status_summary: GitStatusSummaryInput;
 }
 
@@ -41,6 +46,7 @@ export interface ToolResultByName extends Record<AllowedToolName, unknown> {
   exec_command: ExecCommandOutput;
   tree: TreeOutput;
   read_file: ReadFileOutput;
+  regexp_search: RegexpSearchOutput;
   git_status_summary: GitStatusSummaryOutput;
 }
 
@@ -65,6 +71,7 @@ type ToolInvocationArgsByName = {
       max_lines?: ReadFileInput["max_lines"];
     },
   ];
+  regexp_search: [input: RegexpSearchInput];
   git_status_summary: [cwd: string | undefined];
 };
 
@@ -123,6 +130,7 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
       max_lines: args.max_lines,
     },
   ],
+  regexp_search: (args) => [args],
   git_status_summary: (args) => [args.cwd],
 };
 
@@ -145,6 +153,26 @@ const normalizeArgsForSandbox = <TName extends AllowedToolName>(
         workspaceRoot,
       );
       return [{ ...input, cwd: resolved }] as ToolInvocationArgsByName[TName];
+    }
+    return args;
+  }
+
+  if (
+    toolName === "regexp_search" &&
+    typeof args[0] === "object" &&
+    args[0] !== null &&
+    !Array.isArray(args[0])
+  ) {
+    const input = args[0] as Record<string, unknown>;
+    if (typeof input.root_path === "string") {
+      const normalizedRootPath = input.root_path.replace(/\\/g, "/");
+      const resolved = SandboxPath.resolveInWorkspace(
+        normalizedRootPath,
+        workspaceRoot,
+      );
+      return [
+        { ...input, root_path: resolved },
+      ] as ToolInvocationArgsByName[TName];
     }
     return args;
   }

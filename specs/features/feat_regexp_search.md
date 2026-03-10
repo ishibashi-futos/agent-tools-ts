@@ -24,7 +24,7 @@
 - `root_path` は `/` と `\\` の両方を受け付け、内部では `/` に正規化して処理する
 - `include` / `exclude` の glob フィルタを提供し、同一パスに対しては `exclude` を優先する
 - デフォルト除外ディレクトリ（`.git/` `node_modules/` `dist/` `build/` `target/` `.vscode/`）を適用する
-- `must_include` に含まれるパス配下は除外判定より優先して検索対象に必ず含める
+- `include` は探索可能なパス集合に対する allowlist として扱い、除外境界は上書きしない
 - 結果は `path`（workspace 相対）`line` `column` `match` `line_text` を返す
 - 出力順は `path` 昇順、同一 `path` 内は `line` 昇順、同一 `line` 内は `column` 昇順で安定化する
 - `max_results` 上限到達時は打ち切り、`truncated=true` を返す
@@ -55,7 +55,6 @@ type RegexpSearchInput = {
   root_path?: string; // 任意、default: "."、/ と \\ を受け付ける
   include?: string[]; // 任意、glob 配列
   exclude?: string[]; // 任意、glob 配列（include より優先）
-  must_include?: string[]; // 任意、除外判定より優先して検索対象に含めるパス（例: ["dist", "target/generated"]）
   max_results?: number; // 任意、default: 100、min: 1、max: 500
   max_file_size_bytes?: 1048576; // 任意、default: 1048576（1 MiB 固定）
   timeout_ms?: number; // 任意、default: 5000、min: 1、max: 30000
@@ -124,18 +123,13 @@ const REGEXP_SEARCH_DEFINITION = {
       include: {
         type: "array",
         items: { type: "string" },
-        description: "Glob allowlist patterns.",
+        description:
+          "Glob allowlist patterns within searchable paths. Does not override exclusions.",
       },
       exclude: {
         type: "array",
         items: { type: "string" },
         description: "Glob denylist patterns (takes precedence over include).",
-      },
-      must_include: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "Paths that must be searched even if matched by exclusion filters.",
       },
       max_results: {
         type: "number",
@@ -179,12 +173,12 @@ const REGEXP_SEARCH_DEFINITION = {
 
 ## 7. フィルタ設計
 
-- フィルタ適用順は `exclude` 判定 -> `include` 判定 -> ファイルサイズ判定 -> バイナリ判定とする
+- フィルタ適用順は「除外境界判定 -> `include` 判定 -> ファイルサイズ判定 -> バイナリ判定」とする
 - `exclude` は常に優先し、`include` に一致しても `exclude` 一致時は除外する
 - デフォルト除外は `.git/**` `node_modules/**` `dist/**` `build/**` `target/**` `.vscode/**` とする
-- `must_include` は最優先で適用し、`exclude` とデフォルト除外の両方を上書きして検索対象に含める
+- デフォルト除外と `exclude` は絶対境界として扱い、`include` では上書きしない
 - パス区切りは入力時に `\\` を `/` へ正規化し、glob 評価と出力パスを `/` 統一で扱う
-- 隠しファイルの扱いは `tree` と同様にデフォルト除外を優先し、個別 include 指定があれば許可する
+- 隠しファイルの扱いは `tree` と同様にデフォルト除外を優先し、`include` は探索可能な範囲内でのみ適用する
 
 ## 8. 実装分割（モジュール責務）
 
@@ -226,7 +220,6 @@ const REGEXP_SEARCH_DEFINITION = {
 
 | 未決事項 | 決定方法（どう決めるか） |
 | --- | --- |
-| `must_include` の一致判定を「完全一致」と「配下プレフィックス一致」のどちらで固定するか | `dist` / `dist/sub` / `dist2` の3ケースで期待集合を定義したテストを追加し、誤包含がない方式を採択する |
 
 ## 11. 受け入れ基準（Definition of Done）
 
@@ -235,8 +228,8 @@ const REGEXP_SEARCH_DEFINITION = {
 - `flags="g"` を指定しても未指定時と同じ一致件数を返す
 - 不正正規表現（例: `pattern="("`）で `INVALID_REGEX` を返す
 - `include` と `exclude` が同時一致するパスは結果に含まれない
-- `must_include=["dist"]` 指定時、`dist/` 配下が検索対象になる
-- `must_include=["node_modules/pkg"]` かつ `exclude=["node_modules/**"]` でも `node_modules/pkg` 配下は検索対象になる
+- `include=["dist/**"]` を指定しても `dist/` 配下は検索対象にならない
+- `include=["src/**"]` 指定時、探索可能な通常ディレクトリ配下のみ検索対象になる
 - 出力 `items` が `path` / `line` / `column` の昇順で安定している
 - `max_results=1` かつ 2 件以上一致する入力で `truncated=true` を返す
 - Windows 区切り入力（例: `root_path="src\\tools"`）でも MacOS と同じ結果集合を返す
@@ -245,4 +238,3 @@ const REGEXP_SEARCH_DEFINITION = {
 - `scripts/sanity.sh` が成功する
 
 未確定事項サマリ:
-- `must_include` の一致判定方式（完全一致/配下一致）の最終確定が未了。
