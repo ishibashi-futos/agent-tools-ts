@@ -18,6 +18,7 @@ import { tree } from "./tools/edit/tree/tool";
 import { writeFile } from "./tools/edit/write_file/tool";
 import { execCommand } from "./tools/exec/exec_command/tool";
 import { gitStatusSummary } from "./tools/git/git_status_summary/tool";
+import { astGrepSearch } from "./tools/search/ast_grep_search/tool";
 import { regexpSearch } from "./tools/search/regexp_search/tool";
 
 // 各ドメインの生ロジックをインポート（後ほど各ディレクトリで実装）
@@ -90,6 +91,15 @@ export const ToolCatalog = {
     },
     handler: regexpSearch,
   },
+  ast_grep_search: {
+    metadata: {
+      name: "ast_grep_search",
+      isWriteOp: false,
+      description:
+        "Searches source files with ast-grep and returns raw structured matches.",
+    },
+    handler: astGrepSearch,
+  },
   git_status_summary: {
     metadata: {
       name: "git_status_summary",
@@ -135,6 +145,10 @@ export function createAgentToolkit(context: ToolContext) {
     regexp_search: createSecureTool(
       ToolCatalog.regexp_search.metadata,
       ToolCatalog.regexp_search.handler,
+    ).bind(null, context),
+    ast_grep_search: createSecureTool(
+      ToolCatalog.ast_grep_search.metadata,
+      ToolCatalog.ast_grep_search.handler,
     ).bind(null, context),
     git_status_summary: createSecureTool(
       ToolCatalog.git_status_summary.metadata,

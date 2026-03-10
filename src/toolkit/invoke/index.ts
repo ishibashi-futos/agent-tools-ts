@@ -25,6 +25,10 @@ import type {
   GitStatusSummaryOutput,
 } from "../../tools/git/git_status_summary/types";
 import type {
+  AstGrepSearchInput,
+  AstGrepSearchOutput,
+} from "../../tools/search/ast_grep_search/types";
+import type {
   RegexpSearchInput,
   RegexpSearchOutput,
 } from "../../tools/search/regexp_search/types";
@@ -37,6 +41,7 @@ export interface ToolArgsByName extends Record<AllowedToolName, unknown> {
   tree: TreeInput;
   read_file: ReadFileInput;
   regexp_search: RegexpSearchInput;
+  ast_grep_search: AstGrepSearchInput;
   git_status_summary: GitStatusSummaryInput;
 }
 
@@ -47,6 +52,7 @@ export interface ToolResultByName extends Record<AllowedToolName, unknown> {
   tree: TreeOutput;
   read_file: ReadFileOutput;
   regexp_search: RegexpSearchOutput;
+  ast_grep_search: AstGrepSearchOutput;
   git_status_summary: GitStatusSummaryOutput;
 }
 
@@ -72,6 +78,7 @@ type ToolInvocationArgsByName = {
     },
   ];
   regexp_search: [input: RegexpSearchInput];
+  ast_grep_search: [input: AstGrepSearchInput];
   git_status_summary: [cwd: string | undefined];
 };
 
@@ -131,6 +138,7 @@ const TOOL_ARGUMENT_RESOLVERS: ToolArgumentResolver = {
     },
   ],
   regexp_search: (args) => [args],
+  ast_grep_search: (args) => [args],
   git_status_summary: (args) => [args.cwd],
 };
 
@@ -158,7 +166,7 @@ const normalizeArgsForSandbox = <TName extends AllowedToolName>(
   }
 
   if (
-    toolName === "regexp_search" &&
+    (toolName === "regexp_search" || toolName === "ast_grep_search") &&
     typeof args[0] === "object" &&
     args[0] !== null &&
     !Array.isArray(args[0])
